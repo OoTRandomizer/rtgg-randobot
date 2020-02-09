@@ -17,9 +17,11 @@ class RandoHandler(RaceHandler):
         Send introduction messages.
         """
         await self.send_message(
-            'Need a seed generated? Use !seed <preset> as soon as you\'re '
-            'ready (e.g. !seed weekly). Use !race <preset> to generate a race '
-            'seed.'
+            'Welcome to OoTR! Create a seed with !seed <preset>'
+        )
+        await self.send_message(
+            'If no preset is selected, weekly settings will be used. '
+            'Use !spoilerseed to generate a seed with a spoiler log.'
         )
         await self.send_message(
             'For a list of presets, use !presets'
@@ -29,13 +31,13 @@ class RandoHandler(RaceHandler):
         """
         Handle !seed commands.
         """
-        await self.roll_and_send(args, message, False)
+        await self.roll_and_send(args, message, True)
 
-    async def ex_race(self, args, message):
+    async def ex_spoilerseed(self, args, message):
         """
         Handle !race commands.
         """
-        await self.roll_and_send(args, message, True)
+        await self.roll_and_send(args, message, False)
 
     async def ex_presets(self, args, message):
         """
@@ -54,12 +56,8 @@ class RandoHandler(RaceHandler):
             )
             return
 
-        if len(args) == 0:
-            await self.send_message('Please specify a preset.')
-            return
-
         await self.roll(
-            preset=args[0],
+            preset=args[0] if args else 'weekly',
             encrypt=encrypt,
             reply_to=message.get('user', {}).get('name', 'Okay'),
         )
