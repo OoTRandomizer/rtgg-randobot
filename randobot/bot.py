@@ -6,7 +6,7 @@ from .zsr import ZSR
 
 class RandoBot(Bot):
     """
-    RandoBot base class. Uses the
+    RandoBot base class.
     """
     def __init__(self, ootr_api_key, *args, **kwargs):
         super().__init__(*args, **kwargs)
