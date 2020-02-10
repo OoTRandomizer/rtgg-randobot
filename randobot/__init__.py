@@ -14,6 +14,8 @@ def main():
     parser.add_argument('client_id', type=str, help='racetime.gg client ID')
     parser.add_argument('client_secret', type=str, help='racetime.gg client secret')
     parser.add_argument('--verbose', '-v', action='store_true', help='verbose output')
+    parser.add_argument('--host', type=str, nargs='?', help='change the ractime.gg host (debug only!')
+    parser.add_argument('--insecure', action='store_true', help='don\'t use HTTPS (debug only!)')
 
     args = parser.parse_args()
 
@@ -28,6 +30,11 @@ def main():
         '[%(asctime)s] %(name)s (%(levelname)s) :: %(message)s'
     ))
     logger.addHandler(handler)
+
+    if args.host:
+        RandoBot.racetime_host = args.host
+    if args.insecure:
+        RandoBot.racetime_secure = False
 
     inst = RandoBot(
         ootr_api_key=args.ootr_api_key,
