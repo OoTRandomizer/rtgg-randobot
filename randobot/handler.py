@@ -18,16 +18,18 @@ class RandoHandler(RaceHandler):
         """
         Send introduction messages.
         """
-        await self.send_message(
-            'Welcome to OoTR! Create a seed with !seed <preset>'
-        )
-        await self.send_message(
-            'If no preset is selected, weekly settings will be used. '
-            'Use !spoilerseed to generate a seed with a spoiler log.'
-        )
-        await self.send_message(
-            'For a list of presets, use !presets'
-        )
+        if not self.state.get('intro_sent'):
+            await self.send_message(
+                'Welcome to OoTR! Create a seed with !seed <preset>'
+            )
+            await self.send_message(
+                'If no preset is selected, weekly settings will be used. '
+                'Use !spoilerseed to generate a seed with a spoiler log.'
+            )
+            await self.send_message(
+                'For a list of presets, use !presets'
+            )
+            self.state['intro_sent'] = True
 
     async def ex_seed(self, args, message):
         """
