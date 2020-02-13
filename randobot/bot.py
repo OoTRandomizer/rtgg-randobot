@@ -15,8 +15,8 @@ class RandoBot(Bot):
     def get_handler_class(self):
         return RandoHandler
 
-    def get_handler_kwargs(self, ws):
+    def get_handler_kwargs(self, *args, **kwargs):
         return {
-            **super().get_handler_kwargs(ws),
+            **super().get_handler_kwargs(*args, **kwargs),
             'zsr': self.zsr,
         }
