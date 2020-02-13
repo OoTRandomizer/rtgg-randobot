@@ -54,7 +54,7 @@ class RandoHandler(RaceHandler):
         Read an incoming !seed or !race command, and generate a new seed if
         valid.
         """
-        if self.seed_rolled:
+        if self.state.get('seed_rolled'):
             await self.send_message(
                 'I already rolled a seed. Don\'t get greedy!'
             )
@@ -85,7 +85,7 @@ class RandoHandler(RaceHandler):
         )
         await self.set_raceinfo(seed_uri)
 
-        self.seed_rolled = True
+        self.state['seed_rolled'] = True
 
     async def send_presets(self):
         """
