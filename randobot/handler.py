@@ -1,4 +1,4 @@
-from racetime_bot import RaceHandler
+from racetime_bot import RaceHandler, monitor_cmd, can_moderate, can_monitor
 
 
 class RandoHandler(RaceHandler):
@@ -30,6 +30,31 @@ class RandoHandler(RaceHandler):
                 'For a list of presets, use !presets'
             )
             self.state['intro_sent'] = True
+            self.state['locked'] = False
+
+    @monitor_cmd
+    async def ex_lock(self, args, message):
+        """
+        Handle !lock commands.
+
+        Prevent seed rolling unless user is a race monitor.
+        """
+        self.state['locked'] = True
+        await self.send_message(
+            'Lock initiated. I will now only roll seeds for race monitors.'
+        )
+
+    @monitor_cmd
+    async def ex_unlock(self, args, message):
+        """
+        Handle !unlock commands.
+
+        Remove lock preventing seed rolling unless user is a race monitor.
+        """
+        self.state['locked'] = False
+        await self.send_message(
+            'Lock released. Anyone may now roll a seed.'
+        )
 
     async def ex_seed(self, args, message):
         """
@@ -54,16 +79,26 @@ class RandoHandler(RaceHandler):
         Read an incoming !seed or !race command, and generate a new seed if
         valid.
         """
-        if self.state.get('seed_rolled'):
+        reply_to = message.get('user', {}).get('name')
+
+        if self.state.get('locked') and not can_monitor(message):
             await self.send_message(
-                'I already rolled a seed. Don\'t get greedy!'
+                'Sorry %(reply_to)s, seed rolling is locked. Only race '
+                'monitors may roll a seed for this race.'
+                % {'reply_to': reply_to or 'friend'}
+            )
+            return
+        if self.state.get('seed_rolled') and not can_moderate(message):
+            await self.send_message(
+                'Well excuuuuuse me princess, but I already rolled a seed. '
+                'Don\'t get greedy!'
             )
             return
 
         await self.roll(
             preset=args[0] if args else 'weekly',
             encrypt=encrypt,
-            reply_to=message.get('user', {}).get('name', 'Okay'),
+            reply_to=reply_to,
         )
 
     async def roll(self, preset, encrypt, reply_to):
@@ -72,8 +107,9 @@ class RandoHandler(RaceHandler):
         """
         if preset not in self.presets:
             await self.send_message(
-                'Sorry, I don\'t recognise that preset. Use !presets to see '
-                'what is available.'
+                'Sorry %(reply_to)s, I don\'t recognise that preset. Use '
+                '!presets to see what is available.'
+                % {'reply_to': reply_to or 'friend'}
             )
             return
 
@@ -81,7 +117,7 @@ class RandoHandler(RaceHandler):
 
         await self.send_message(
             '%(reply_to)s, here is your seed: %(seed_uri)s'
-            % {'reply_to': reply_to, 'seed_uri': seed_uri}
+            % {'reply_to': reply_to or 'Okay', 'seed_uri': seed_uri}
         )
         await self.set_raceinfo(seed_uri)
 

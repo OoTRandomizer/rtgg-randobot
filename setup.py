@@ -19,7 +19,7 @@ setup(
     },
     version='1.0.0',
     install_requires=[
-        'racetime_bot',
+        'racetime_bot>=1.5.0,<2.0',
     ],
     packages=find_packages(),
     entry_points={
