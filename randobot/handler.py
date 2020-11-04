@@ -32,6 +32,8 @@ class RandoHandler(RaceHandler):
             self.state['intro_sent'] = True
         if 'locked' not in self.state:
             self.state['locked'] = False
+        if 'fpa' not in self.state:
+            self.state['fpa'] = False
 
     @monitor_cmd
     async def ex_lock(self, args, message):
@@ -82,6 +84,41 @@ class RandoHandler(RaceHandler):
         if self._race_in_progress():
             return
         await self.send_presets()
+
+    async def ex_fpa(self, args, message):
+        if len(args) == 1 and args[0] in ('on', 'off'):
+            if not can_monitor(message):
+                resp = 'Sorry %(reply_to)s, only race monitors can do that.'
+            elif args[0] == 'on':
+                if self.state['fpa']:
+                    resp = 'Fair play agreement is already activated.'
+                else:
+                    self.state['fpa'] = True
+                    resp = (
+                        'Fair play agreement is now active. @entrants may '
+                        'use the !fpa command during the race to notify of a '
+                        'crash. Race monitors should enable notifications '
+                        'using the bell 🔔 icon below chat.'
+                    )
+            else:  # args[0] == 'off'
+                if not self.state['fpa']:
+                    resp = 'Fair play agreement is not active.'
+                else:
+                    self.state['fpa'] = False
+                    resp = 'Fair play agreement is now deactivated.'
+        elif self.state['fpa']:
+            if self._race_in_progress():
+                resp = '@everyone FPA has been invoked by @%(reply_to)s.'
+            else:
+                resp = 'FPA cannot be invoked before the race starts.'
+        else:
+            resp = (
+                'Fair play agreement is not active. Race monitors may enable '
+                'FPA for this race with !fpa on'
+            )
+        if resp:
+            reply_to = message.get('user', {}).get('name', 'friend')
+            await self.send_message(resp % {'reply_to': reply_to})
 
     async def roll_and_send(self, args, message, encrypt):
         """
