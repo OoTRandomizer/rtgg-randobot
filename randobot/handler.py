@@ -5,7 +5,7 @@ class RandoHandler(RaceHandler):
     """
     RandoBot race handler. Generates seeds, presets, and frustration.
     """
-    stop_at = ['pending', 'in_progress', 'cancelled', 'finished']
+    stop_at = ['cancelled', 'finished']
 
     def __init__(self, zsr, **kwargs):
         super().__init__(**kwargs)
@@ -18,7 +18,7 @@ class RandoHandler(RaceHandler):
         """
         Send introduction messages.
         """
-        if not self.state.get('intro_sent'):
+        if not self.state.get('intro_sent') and not self._race_in_progress():
             await self.send_message(
                 'Welcome to OoTR! Create a seed with !seed <preset>'
             )
@@ -30,6 +30,7 @@ class RandoHandler(RaceHandler):
                 'For a list of presets, use !presets'
             )
             self.state['intro_sent'] = True
+        if 'locked' not in self.state:
             self.state['locked'] = False
 
     @monitor_cmd
@@ -51,6 +52,8 @@ class RandoHandler(RaceHandler):
 
         Remove lock preventing seed rolling unless user is a race monitor.
         """
+        if self._race_in_progress():
+            return
         self.state['locked'] = False
         await self.send_message(
             'Lock released. Anyone may now roll a seed.'
@@ -60,18 +63,24 @@ class RandoHandler(RaceHandler):
         """
         Handle !seed commands.
         """
+        if self._race_in_progress():
+            return
         await self.roll_and_send(args, message, True)
 
     async def ex_spoilerseed(self, args, message):
         """
         Handle !race commands.
         """
+        if self._race_in_progress():
+            return
         await self.roll_and_send(args, message, False)
 
     async def ex_presets(self, args, message):
         """
         Handle !presets commands.
         """
+        if self._race_in_progress():
+            return
         await self.send_presets()
 
     async def roll_and_send(self, args, message, encrypt):
@@ -130,3 +139,6 @@ class RandoHandler(RaceHandler):
         await self.send_message('Available presets:')
         for name, full_name in self.presets.items():
             await self.send_message(f'{name} – {full_name}')
+
+    def _race_in_progress(self):
+        return self.data.get('status').get('value') in ('pending', 'in_progress')
