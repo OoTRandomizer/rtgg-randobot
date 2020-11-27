@@ -14,6 +14,15 @@ class RandoHandler(RaceHandler):
         self.presets = zsr.load_presets()
         self.seed_rolled = False
 
+    def should_stop(self):
+        return (
+            (
+                self.data.get('goal', {}).get('name') == 'Random settings league'
+                and not self.data.get('goal', {}).get('custom', False)
+            )
+            or super().should_stop()
+        )
+
     async def begin(self):
         """
         Send introduction messages.
