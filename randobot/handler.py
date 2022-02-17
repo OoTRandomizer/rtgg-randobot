@@ -14,10 +14,21 @@ class RandoHandler(RaceHandler):
         super().__init__(**kwargs)
         self.zsr = zsr
 
+    def should_stop(self):
+        return (
+            (
+                self.data.get('goal', {}).get('name') == 'Random settings league'
+                and not self.data.get('goal', {}).get('custom', False)
+            )
+            or super().should_stop()
+        )
+
     async def begin(self):
         """
         Send introduction messages.
         """
+        if self.should_stop():
+            return
         if not self.state.get('intro_sent') and not self._race_in_progress():
             await self.send_message(
                 'Welcome to OoTR! Create a seed with !seed <preset>'
