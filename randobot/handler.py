@@ -15,11 +15,11 @@ class RandoHandler(RaceHandler):
         self.zsr = zsr
 
     def should_stop(self):
+        goal_name = self.data.get('goal', {}).get('name')
+        goal_is_custom = self.data.get('goal', {}).get('custom', False)
         return (
-            (
-                self.data.get('goal', {}).get('name') == 'Random settings league'
-                and not self.data.get('goal', {}).get('custom', False)
-            )
+            (goal_name == 'Random settings league' and not goal_is_custom) # handled by https://github.com/fenhl/rslbot
+            or (goal_name == '3rd Multiworld Tournament' and goal_is_custom) # handled by https://github.com/midoshouse/midos.house
             or super().should_stop()
         )
 
