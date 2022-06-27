@@ -1,6 +1,61 @@
-from asyncio import sleep
+from asyncio import create_task, gather, sleep
+import datetime
+import json
+import re
+import isodate
 from racetime_bot import RaceHandler, monitor_cmd, can_moderate, can_monitor
 
+def natjoin(sequence, default):
+    if len(sequence) == 0:
+        return str(default)
+    elif len(sequence) == 1:
+        return str(sequence[0])
+    elif len(sequence) == 2:
+        return f'{sequence[0]} and {sequence[1]}'
+    else:
+        return ', '.join(sequence[:-1]) + f', and {sequence[-1]}'
+
+def format_duration(duration):
+    parts = []
+    hours, duration = divmod(duration, datetime.timedelta(hours=1))
+    if hours > 0:
+        parts.append(f'{hours} hour{"" if hours == 1 else "s"}')
+    minutes, duration = divmod(duration, datetime.timedelta(minutes=1))
+    if minutes > 0:
+        parts.append(f'{minutes} minute{"" if minutes == 1 else "s"}')
+    if duration > datetime.timedelta():
+        seconds = duration.total_seconds()
+        parts.append(f'{seconds} second{"" if seconds == 1 else "s"}')
+    return natjoin(parts, '0 seconds')
+
+def format_breaks(duration, interval):
+    return f'{format_duration(duration)} every {format_duration(interval)}'
+
+def parse_duration(args, default):
+    if len(args) == 0:
+        raise ValueError('Empty duration args')
+    duration = datetime.timedelta()
+    for arg in args:
+        arg = arg.lower()
+        while len(arg) > 0:
+            match = re.match('([0-9]+)([smh:]?)', arg)
+            if not match:
+                raise ValueError('Unknown duration format')
+            unit = {
+                '': default,
+                's': 'seconds',
+                'm': 'minutes',
+                'h': 'hours',
+                ':': default
+            }[match.group(2)]
+            default = {
+                'hours': 'minutes',
+                'minutes': 'seconds',
+                'seconds': 'seconds'
+            }[unit]
+            duration += datetime.timedelta(**{unit: float(match.group(1))})
+            arg = arg[len(match.group(0)):]
+    return duration
 
 class RandoHandler(RaceHandler):
     """
@@ -29,6 +84,7 @@ class RandoHandler(RaceHandler):
         """
         if self.should_stop():
             return
+        self.heartbeat_task = create_task(self.heartbeat(), name=f'heartbeat for {self.data.get("name")}')
         if not self.state.get('intro_sent') and not self._race_in_progress():
             await self.send_message(
                 'Welcome to OoTR! Create a seed with !seed <preset>'
@@ -45,6 +101,41 @@ class RandoHandler(RaceHandler):
             self.state['locked'] = False
         if 'fpa' not in self.state:
             self.state['fpa'] = False
+        if 'breaks' not in self.state:
+            self.state['breaks'] = None
+
+    async def race_data(self, data):
+        await super().race_data(data)
+        if self.data.get('started_at') is not None:
+            if not self.state.get('break_notifications_started') and self.state.get('breaks') is not None:
+                self.state['break_notifications_started'] = True
+                self.break_notifications_task = create_task(self.break_notifications(), name=f'break notifications for {self.data.get("name")}')
+
+    async def heartbeat(self):
+        while not self.should_stop():
+            await sleep(20)
+            await self.ws.send(json.dumps({'action': 'ping'}))
+
+    async def break_notifications(self):
+        duration, interval = self.state['breaks']
+        await sleep((interval + isodate.parse_duration(self.data.get('start_delay', 'P0DT00H00M00S')) - datetime.timedelta(minutes=5)).total_seconds())
+        while not self.should_stop():
+            await gather(
+                self.send_message('@entrants Reminder: Next break in 5 minutes.'),
+                sleep(datetime.timedelta(minutes=5).total_seconds()),
+            )
+            if self.should_stop():
+                break
+            await gather(
+                self.send_message(f'@entrants Break time! Please pause for {format_duration(duration)}.'),
+                sleep(duration.total_seconds()),
+            )
+            if self.should_stop():
+                break
+            await gather(
+                self.send_message('@entrants Break ended. You may resume playing.'),
+                sleep((interval - duration - datetime.timedelta(minutes=5)).total_seconds()),
+            )
 
     @monitor_cmd
     async def ex_lock(self, args, message):
@@ -130,6 +221,36 @@ class RandoHandler(RaceHandler):
         if resp:
             reply_to = message.get('user', {}).get('name', 'friend')
             await self.send_message(resp % {'reply_to': reply_to})
+
+    async def ex_breaks(self, args, message):
+        if self._race_in_progress():
+            return
+        if len(args) == 0:
+            if self.state['breaks'] is None:
+                await self.send_message('Breaks are currently disabled. Example command to enable: !breaks 5m every 2h30')
+            else:
+                await self.send_message(f'Breaks are currently set to {format_breaks(*self.state["breaks"])}. Disable with !breaks off')
+        elif len(args) == 1 and args[0] == 'off':
+            self.state['breaks'] = None
+            await self.send_message('Breaks are now disabled.')
+        else:
+            reply_to = message.get('user', {}).get('name')
+            try:
+                sep_idx = args.index('every')
+                duration = parse_duration(args[:sep_idx], default='minutes')
+                interval = parse_duration(args[sep_idx + 1:], default='hours')
+            except ValueError:
+                await self.send_message(f'Sorry {reply_to or "friend"}, I don\'t recognise that format for breaks. Example commands: !breaks 5m every 2h30, !breaks off')
+            else:
+                if duration < datetime.timedelta(minutes=1):
+                    await self.send_message(f'Sorry {reply_to or "friend"}, minimum break time (if enabled at all) is 1 minute. You can disable breaks entirely with !breaks off')
+                elif interval < duration + datetime.timedelta(minutes=5):
+                    await self.send_message(f'Sorry {reply_to or "friend"}, there must be a minimum of 5 minutes between breaks since I notify runners 5 minutes in advance.')
+                elif duration + interval >= datetime.timedelta(hours=24):
+                    await self.send_message(f'Sorry {reply_to or "friend"}, race rooms are automatically closed after 24 hours so these breaks wouldn\'t work.')
+                else:
+                    self.state['breaks'] = duration, interval
+                    await self.send_message(f'Breaks set to {format_breaks(duration, interval)}.')
 
     async def roll_and_send(self, args, message, encrypt):
         """

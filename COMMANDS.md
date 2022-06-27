@@ -70,3 +70,17 @@ immediately if there is a ping.
 
 To prevent spam or misuse, it is also recommended that the **"Allow non-entrant 
 chat"** race setting is disabled when conducting a race using FPA.
+
+## !breaks
+
+Usable by: anyone
+
+Enable or disable reminders for regular breaks during the race. No notifications
+are sent by default, they can be configured by specifying the duration of the
+breaks and their interval, for example with `!breaks 5m every 2h30m`. They can
+be toggled off again with `!breaks off`.
+
+The bot will post notifications 5 minutes ahead of, as well as at the start and
+end of each break. It is recommended to enable desktop notifications using the
+bell icon in racetime.gg chat when using breaks. This way your browser will
+notify you for these reminders.
