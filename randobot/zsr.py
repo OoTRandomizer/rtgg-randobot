@@ -5,15 +5,17 @@ import requests
 
 class ZSR:
     """
-    Class for interacting with ootrandomizer.com to generate seeds, and
-    zeldaspeedruns.com to get available presets.
+    Class for interacting with ootrandomizer.com to generate seeds and available presets.
     """
     seed_public = 'https://ootrandomizer.com/seed/get?id=%(id)s'
     seed_endpoint = 'https://ootrandomizer.com/api/v2/seed/create'
     status_endpoint = 'https://ootrandomizer.com/api/v2/seed/status'
     details_endpoint = 'https://ootrandomizer.com/api/v2/seed/details'
-    preset_endpoint = 'https://www.zeldaspeedruns.com/assets/ootr_presets.json'
+    version_endpoint = 'https://ootrandomizer.com/api/version'
+    preset_endpoint = 'https://ootrandomizer.com/rtgg/ootr_presets.json'
+    preset_dev_endpoint = 'https://ootrandomizer.com/rtgg/ootr_presets_dev.json'
     settings_endpoint = 'https://raw.githubusercontent.com/TestRunnerSRL/OoT-Randomizer/release/data/presets_default.json'
+    settings_dev_endpoint = 'https://raw.githubusercontent.com/TestRunnerSRL/OoT-Randomizer/Dev/data/presets_default.json'
 
     hash_map = {
         'Beans': 'HashBeans',
@@ -53,6 +55,7 @@ class ZSR:
     def __init__(self, ootr_api_key):
         self.ootr_api_key = ootr_api_key
         self.presets = self.load_presets()
+        self.presets_dev = self.load_presets_dev()
 
     def load_presets(self):
         """
@@ -69,16 +72,43 @@ class ZSR:
             if value['fullName'] in settings
         }
 
-    def roll_seed(self, preset, encrypt):
+    def load_presets_dev(self):
+        """
+        Load and return available seed presets for dev.
+        """
+        presets_dev = requests.get(self.preset_dev_endpoint).json()
+        settings_dev = requests.get(self.settings_dev_endpoint).json()
+        return {
+            key: {
+                'full_name': value['fullName'],
+                'settings': settings_dev.get(value['fullName']),
+            }
+            for key, value in presets_dev.items()
+            if value['fullName'] in settings_dev
+        }
+
+    def roll_seed(self, preset, encrypt, dev):
         """
         Generate a seed and return its public URL.
         """
-        req_body = json.dumps(self.presets[preset]['settings'])
+        if dev:
+            req_body = json.dumps(self.presets_dev[preset]['settings'])
+            version_params = {
+                'branch': 'dev'
+            }
+            version_req = requests.get(self.version_endpoint, params=version_params).json()
+            latest_dev_version = version_req['currentlyActiveVersion']
+        else: 
+            req_body = json.dumps(self.presets[preset]['settings'])
         params = {
             'key': self.ootr_api_key,
         }
-        if encrypt:
+        if encrypt and not dev:
             params['encrypt'] = 'true'
+        if encrypt and dev:
+            params['locked'] = 'true'
+        if dev:
+            params['version'] = 'dev_' + latest_dev_version
         data = requests.post(self.seed_endpoint, req_body, params=params,
                              headers={'Content-Type': 'application/json'}).json()
         return data['id'], self.seed_public % data
