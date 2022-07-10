@@ -87,14 +87,14 @@ class RandoHandler(RaceHandler):
         self.heartbeat_task = create_task(self.heartbeat(), name=f'heartbeat for {self.data.get("name")}')
         if not self.state.get('intro_sent') and not self._race_in_progress():
             await self.send_message(
-                'Welcome to OoTR! Create a seed with !seed <preset>'
+                'Welcome to OoTR! Create a release seed with !seed <preset> or a latest dev seed with !seeddev <preset>'
             )
             await self.send_message(
                 'If no preset is selected, weekly settings will be used. '
-                'Use !spoilerseed to generate a seed with a spoiler log.'
+                'Use !race to generate a release seed with a spoiler log.'
             )
             await self.send_message(
-                'For a list of presets, use !presets'
+                'For a list of presets, use !presets for release and !presetsdev for dev'
             )
             self.state['intro_sent'] = True
         if 'locked' not in self.state:
@@ -169,7 +169,15 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        await self.roll_and_send(args, message, True)
+        await self.roll_and_send(args, message, True, False)
+
+    async def ex_seeddev(self, args, message):
+        """
+        Handle !seeddev commands.
+        """
+        if self._race_in_progress():
+            return
+        await self.roll_and_send(args, message, True, True)
 
     async def ex_spoilerseed(self, args, message):
         """
@@ -177,7 +185,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        await self.roll_and_send(args, message, False)
+        await self.roll_and_send(args, message, False, False)
 
     async def ex_presets(self, args, message):
         """
@@ -185,7 +193,15 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        await self.send_presets()
+        await self.send_presets(False)
+
+    async def ex_presets_dev(self, args, message):
+        """
+        Handle !presetsdev commands.
+        """
+        if self._race_in_progress():
+            return
+        await self.send_presets(True)
 
     async def ex_fpa(self, args, message):
         if len(args) == 1 and args[0] in ('on', 'off'):
@@ -252,9 +268,9 @@ class RandoHandler(RaceHandler):
                     self.state['breaks'] = duration, interval
                     await self.send_message(f'Breaks set to {format_breaks(duration, interval)}.')
 
-    async def roll_and_send(self, args, message, encrypt):
+    async def roll_and_send(self, args, message, encrypt, dev):
         """
-        Read an incoming !seed or !race command, and generate a new seed if
+        Read an incoming !seed, !seeddev or !race command, and generate a new seed if
         valid.
         """
         reply_to = message.get('user', {}).get('name')
@@ -276,10 +292,11 @@ class RandoHandler(RaceHandler):
         await self.roll(
             preset=args[0] if args else 'weekly',
             encrypt=encrypt,
+            dev=dev,
             reply_to=reply_to,
         )
 
-    async def roll(self, preset, encrypt, reply_to):
+    async def roll(self, preset, encrypt, dev, reply_to):
         """
         Generate a seed and send it to the race room.
         """
@@ -291,7 +308,7 @@ class RandoHandler(RaceHandler):
             )
             return
 
-        seed_id, seed_uri = self.zsr.roll_seed(preset, encrypt)
+        seed_id, seed_uri = self.zsr.roll_seed(preset, encrypt, dev)
 
         await self.send_message(
             '%(reply_to)s, here is your seed: %(seed_uri)s'
@@ -327,13 +344,17 @@ class RandoHandler(RaceHandler):
             'seed_url': self.seed_url % self.state['seed_id'],
         })
 
-    async def send_presets(self):
+    async def send_presets(self,dev):
         """
         Send a list of known presets to the race room.
         """
         await self.send_message('Available presets:')
-        for name, preset in self.zsr.presets.items():
-            await self.send_message('%s – %s' % (name, preset['full_name']))
+        if dev:
+            for name, preset in self.zsr.presets_dev.items():
+                await self.send_message('%s – %s' % (name, preset['full_name']))
+        else:
+            for name, preset in self.zsr.presets.items():
+                await self.send_message('%s – %s' % (name, preset['full_name']))
 
     def _race_in_progress(self):
         return self.data.get('status').get('value') in ('pending', 'in_progress')
