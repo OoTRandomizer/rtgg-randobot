@@ -169,7 +169,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        await self.roll_and_send(args, message, True, False)
+        await self.roll_and_send(args, message, encrypt=True, dev=False)
 
     async def ex_seeddev(self, args, message):
         """
@@ -177,15 +177,15 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        await self.roll_and_send(args, message, True, True)
+        await self.roll_and_send(args, message, encrypt=True, dev=True)
 
     async def ex_spoilerseed(self, args, message):
         """
-        Handle !race commands.
+        Handle !spoilerseed commands.
         """
         if self._race_in_progress():
             return
-        await self.roll_and_send(args, message, False, False)
+        await self.roll_and_send(args, message, encrypt=False, dev=False)
 
     async def ex_presets(self, args, message):
         """
@@ -344,7 +344,7 @@ class RandoHandler(RaceHandler):
             'seed_url': self.seed_url % self.state['seed_id'],
         })
 
-    async def send_presets(self,dev):
+    async def send_presets(self, dev):
         """
         Send a list of known presets to the race room.
         """
