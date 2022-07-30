@@ -195,7 +195,7 @@ class RandoHandler(RaceHandler):
             return
         await self.send_presets(False)
 
-    async def ex_presets_dev(self, args, message):
+    async def ex_presetsdev(self, args, message):
         """
         Handle !presetsdev commands.
         """
