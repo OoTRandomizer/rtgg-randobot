@@ -56,6 +56,8 @@ class ZSR:
         self.ootr_api_key = ootr_api_key
         self.presets = self.load_presets()
         self.presets_dev = self.load_presets_dev()
+        self.last_known_dev_version = None
+        self.get_latest_dev_version()
 
     def load_presets(self):
         """
@@ -87,18 +89,27 @@ class ZSR:
             if value['fullName'] in settings_dev
         }
 
+    def get_latest_dev_version(self):
+        """
+        Returns currently active dev version and a bool indicating if it's changed.
+        """
+        version_req = requests.get(self.version_endpoint, params={'branch': 'dev'}).json()
+        latest_dev_version = version_req['currentlyActiveVersion']
+        if latest_dev_version != self.last_known_dev_version:
+            self.last_known_dev_version = latest_dev_version
+            return latest_dev_version, True
+        return latest_dev_version, False
+
     def roll_seed(self, preset, encrypt, dev):
         """
         Generate a seed and return its public URL.
         """
         if dev:
+            latest_dev_version, changed = self.get_latest_dev_version()
+            if changed:
+                self.presets_dev = self.load_presets_dev()
             req_body = json.dumps(self.presets_dev[preset]['settings'])
-            version_params = {
-                'branch': 'dev'
-            }
-            version_req = requests.get(self.version_endpoint, params=version_params).json()
-            latest_dev_version = version_req['currentlyActiveVersion']
-        else: 
+        else:
             req_body = json.dumps(self.presets[preset]['settings'])
         params = {
             'key': self.ootr_api_key,
