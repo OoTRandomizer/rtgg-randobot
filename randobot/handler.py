@@ -300,10 +300,12 @@ class RandoHandler(RaceHandler):
         """
         Generate a seed and send it to the race room.
         """
-        if preset not in self.zsr.presets:
+        
+        if (dev and preset not in self.zsr.presets_dev) or (not dev and preset not in self.zsr.presets):
+            res_cmd = '!presetsdev' if dev else '!presets'
             await self.send_message(
                 'Sorry %(reply_to)s, I don\'t recognise that preset. Use '
-                '!presets to see what is available.'
+                '%(res_cmd)s to see what is available.'
                 % {'reply_to': reply_to or 'friend'}
             )
             return
