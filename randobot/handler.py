@@ -306,7 +306,7 @@ class RandoHandler(RaceHandler):
             await self.send_message(
                 'Sorry %(reply_to)s, I don\'t recognise that preset. Use '
                 '%(res_cmd)s to see what is available.'
-                % {'reply_to': reply_to or 'friend'}
+                % {'res_cmd': res_cmd, 'reply_to': reply_to or 'friend'}
             )
             return
 
