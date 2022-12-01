@@ -65,18 +65,21 @@ class RandoHandler(RaceHandler):
     stop_at = ['cancelled', 'finished']
     max_status_checks = 50
 
-    def __init__(self, zsr, **kwargs):
+    def __init__(self, zsr, midos_house, **kwargs):
         super().__init__(**kwargs)
         self.zsr = zsr
+        self.midos_house = midos_house
 
     def should_stop(self):
         goal_name = self.data.get('goal', {}).get('name')
         goal_is_custom = self.data.get('goal', {}).get('custom', False)
-        return (
-            (goal_name == 'Random settings league' and not goal_is_custom) # handled by https://github.com/fenhl/rslbot
-            or (goal_name == '3rd Multiworld Tournament' and goal_is_custom) # handled by https://github.com/midoshouse/midos.house
-            or super().should_stop()
-        )
+        if goal_is_custom:
+            if self.midos_house.handles_custom_goal(goal_name):
+                return True # handled by https://github.com/midoshouse/midos.house
+        else:
+            if goal_name == 'Random settings league':
+                return True # handled by https://github.com/fenhl/rslbot
+        return super().should_stop()
 
     async def begin(self):
         """
