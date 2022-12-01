@@ -3,7 +3,6 @@ import contextlib
 import datetime
 import json
 import re
-import gql
 import isodate
 from racetime_bot import RaceHandler, monitor_cmd, can_moderate, can_monitor
 
@@ -76,17 +75,11 @@ class RandoHandler(RaceHandler):
         goal_name = self.data.get('goal', {}).get('name')
         goal_is_custom = self.data.get('goal', {}).get('custom', False)
         if goal_is_custom:
+            if self.midos_house.handles_custom_goal(goal_name):
+                return True # handled by https://github.com/midoshouse/midos.house
+        else:
             if goal_name == 'Random settings league':
                 return True # handled by https://github.com/fenhl/rslbot
-        else:
-            with contextlib.suppress(Exception): # if anything goes wrong, assume Mido's House is down and we should handle the room
-                query = gql.gql("""
-                    query {
-                        goalNames
-                    }
-                """)
-                if goal_name in self.midos_house.execute(query)['goalNames']:
-                    return True # handled by https://github.com/midoshouse/midos.house
         return super().should_stop()
 
     async def begin(self):
