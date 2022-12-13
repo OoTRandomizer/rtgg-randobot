@@ -75,10 +75,10 @@ class RandoHandler(RaceHandler):
         goal_is_custom = self.data.get('goal', {}).get('custom', False)
         if goal_is_custom:
             if self.midos_house.handles_custom_goal(goal_name):
-                return True # handled by https://github.com/midoshouse/midos.house
+                return True # handled by Mido (https://github.com/midoshouse/midos.house)
         else:
             if goal_name == 'Random settings league':
-                return True # handled by https://github.com/fenhl/rslbot
+                return True # handled by RSLBot (https://github.com/midoshouse/midos.house)
         return super().should_stop()
 
     async def begin(self):
