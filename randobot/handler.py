@@ -70,7 +70,7 @@ class RandoHandler(RaceHandler):
         self.zsr = zsr
         self.midos_house = midos_house
 
-    def should_stop(self):
+    async def should_stop(self):
         goal_name = self.data.get('goal', {}).get('name')
         goal_is_custom = self.data.get('goal', {}).get('custom', False)
         if goal_is_custom:
@@ -81,13 +81,13 @@ class RandoHandler(RaceHandler):
                 return True # handled by RSLBot (https://github.com/midoshouse/midos.house)
             elif goal_name == 'Triforce Blitz':
                 return True # handled by Mido (https://github.com/midoshouse/midos.house)
-        return super().should_stop()
+        return await super().should_stop()
 
     async def begin(self):
         """
         Send introduction messages.
         """
-        if self.should_stop():
+        if await self.should_stop():
             return
         self.heartbeat_task = create_task(self.heartbeat(), name=f'heartbeat for {self.data.get("name")}')
         if not self.state.get('intro_sent') and not self._race_in_progress():
@@ -117,26 +117,30 @@ class RandoHandler(RaceHandler):
                 self.break_notifications_task = create_task(self.break_notifications(), name=f'break notifications for {self.data.get("name")}')
 
     async def heartbeat(self):
-        while not self.should_stop():
+        while True:
+            if await self.should_stop():
+                return
             await sleep(20)
             await self.ws.send(json.dumps({'action': 'ping'}))
 
     async def break_notifications(self):
         duration, interval = self.state['breaks']
         await sleep((interval + isodate.parse_duration(self.data.get('start_delay', 'P0DT00H00M00S')) - datetime.timedelta(minutes=5)).total_seconds())
-        while not self.should_stop():
+        while True:
+            if await self.should_stop():
+                return
             await gather(
                 self.send_message('@entrants Reminder: Next break in 5 minutes.'),
                 sleep(datetime.timedelta(minutes=5).total_seconds()),
             )
-            if self.should_stop():
-                break
+            if await self.should_stop():
+                return
             await gather(
                 self.send_message(f'@entrants Break time! Please pause for {format_duration(duration)}.'),
                 sleep(duration.total_seconds()),
             )
-            if self.should_stop():
-                break
+            if await self.should_stop():
+                return
             await gather(
                 self.send_message('@entrants Break ended. You may resume playing.'),
                 sleep((interval - duration - datetime.timedelta(minutes=5)).total_seconds()),
@@ -305,7 +309,6 @@ class RandoHandler(RaceHandler):
         """
         Generate a seed and send it to the race room.
         """
-        
         if (dev and preset not in self.zsr.presets_dev) or (not dev and preset not in self.zsr.presets):
             res_cmd = '!presetsdev' if dev else '!presets'
             await self.send_message(
