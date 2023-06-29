@@ -74,7 +74,7 @@ class RandoHandler(RaceHandler):
         goal_name = self.data.get('goal', {}).get('name')
         goal_is_custom = self.data.get('goal', {}).get('custom', False)
         if goal_is_custom:
-            if self.midos_house.handles_custom_goal(goal_name):
+            if await self.midos_house.handles_custom_goal(goal_name):
                 return True # handled by Mido (https://github.com/midoshouse/midos.house)
         else:
             if goal_name == 'Random settings league':
