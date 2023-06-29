@@ -1,11 +1,13 @@
 import time
 
 import gql
-import gql.transport.aiohttp
+from gql.transport.aiohttp import AIOHTTPTransport
+from gql.transport.exceptions import TransportError
+
 
 class MidosHouse:
     def __init__(self):
-        self.client = gql.Client(transport=gql.transport.aiohttp.AIOHTTPTransport(url='https://midos.house/api/v1/graphql'))
+        self.client = gql.Client(transport=AIOHTTPTransport(url='https://midos.house/api/v1/graphql'))
         self.cache = None
         self.cache_expires_at = time.monotonic()
 
@@ -17,9 +19,10 @@ class MidosHouse:
                         goalNames
                     }
                 """)
+                response = await self.client.execute_async(query)
                 self.cache_expires_at = time.monotonic() + 60 * 60 * 24
-                self.cache = self.client.execute(query)['goalNames']
-            except gql.transport.exceptions.TransportError: # if anything goes wrong, assume Mido's House is down and we should handle the room
+                self.cache = response['goalNames']
+            except TransportError: # if anything goes wrong, assume Mido's House is down and we should handle the room
                 self.cache_expires_at = time.monotonic() + 60
                 self.cache = None
         if self.cache is None:
