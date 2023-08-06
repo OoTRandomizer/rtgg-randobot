@@ -16,6 +16,7 @@ class ZSR:
     preset_dev_endpoint = 'https://ootrandomizer.com/rtgg/ootr_presets_dev.json'
     settings_endpoint = 'https://raw.githubusercontent.com/TestRunnerSRL/OoT-Randomizer/release/data/presets_default.json'
     settings_dev_endpoint = 'https://raw.githubusercontent.com/TestRunnerSRL/OoT-Randomizer/Dev/data/presets_default.json'
+    qualifier_placement_endpoint = 'https://ootrandomizer.com/tournament/seedsOnly'
 
     hash_map = {
         'Beans': 'HashBeans',
@@ -144,3 +145,7 @@ class ZSR:
             self.hash_map.get(item, item)
             for item in settings['file_hash']
         )
+    
+    def load_qualifier_placements(self):
+        placement = requests.get(self.qualifier_placement_endpoint).json()
+        return placement
