@@ -76,6 +76,11 @@ class RandoHandler(RaceHandler):
         self.zsr = zsr
         self.midos_house = midos_house
 
+    def _is_tournament_match(self):
+        if 'S7 Tournament' in self.data.get('info'):
+            return True
+        return False
+
     async def should_stop(self):
         goal_name = self.data.get('goal', {}).get('name')
         goal_is_custom = self.data.get('goal', {}).get('custom', False)
@@ -134,9 +139,9 @@ class RandoHandler(RaceHandler):
                 ],
                 pinned=True,
             )
-            if 'S7 Tournament' in self.data.get('info'):
+            if self._is_tournament_match():
                 await self.send_message(
-                    'Tournament match detected. Use !draft to enter Draft Mode.'
+                    'Tournament match detected. Use !draft on to enable Draft Mode.'
                 )
             self.state['intro_sent'] = True
         if 'draft' not in self.state:
@@ -173,34 +178,128 @@ class RandoHandler(RaceHandler):
 
         Set up room for Draft Mode.
         """
-        if self._race_in_progress():
+        if self._race_in_progress() or not self._is_tournament_match():
             return
-        elif self.state['draft']:
-            return
-        elif not self.state['draft'] and self.data.get('entrants_count') < 2:
+        elif self._is_tournament_match and self.data.get('entrants_count') < 2:
             await self.send_message(
-                'Both runners must be present before entering Draft Mode.'
+                'Both runners must be present before enabling Draft Mode.'
             )
             return
-        self.state['draft'] = True
-        await gather(
-            self.send_message('Welcome to OoTR Draft Mode!'),
-            sleep(1)
-        )
-        await gather(
-            self.ex_fpa(['on'], message),
-            sleep(1)
-        )
-
-        # Verify runner information and export data
-        entrants = []
-        placements = self.zsr.load_qualifier_placements()
-        for entrant in self.data.get('entrants'):
-            for place in placements:
-                if entrant['user']['name'] == place['name']:
-                    entrants.append({'name': place['name'], 'rank': place['place']})
-        self.draft_data.update({'racers': entrants})
+        elif len(args) == 1 and args[0] in ('on', 'off'):
+            if args[0] == 'on' and not self.state['draft']:
+                self.state['draft'] = True
+                await gather(
+                    self.send_message('Welcome to OoTR Draft Mode!'),
+                    sleep(1)
+                )
+                await gather(
+                    self.ex_fpa(['on'], message),
+                    sleep(1)
+                )
+                await gather(
+                    self.send_message(
+                        'You can disable Draft Mode at any time with !draft off.'
+                    ),
+                    sleep(1)
+                )
                 
+                entrants = await self._is_qualified()
+                # If we can't verify qualification data, disable Draft Mode
+                if len(entrants) < 2:
+                    await gather(
+                        self.send_message(
+                            'Error fetching runner data. Please contact a tournament organizer. Disabling Draft Mode...'
+                        ),
+                        sleep(1),
+                        self.ex_draft(['off'], message)
+                    )
+                
+                # Determine higher seeded player and export data to draft_info
+                elif entrants[0]['rank'] < entrants[1]['rank']:
+                    await self.send_message(
+                        f"{entrants[0]['name']}, please select whether or not to ban first with !first or !second."
+                    )
+                    entrants[0]['higher_seed'] = True
+                elif entrants[1]['rank'] < entrants[0]['rank']:
+                    await self.send_message(
+                        f"{entrants[1]['name']}, please select whether or not to ban first with !first or !second."
+                    )
+                    entrants[1]['higher_seed'] = True
+                self.draft_data.update({'racers': entrants})
+            
+            elif args[0] == 'off':
+                if self.state['draft']:
+                    await gather(
+                        self.ex_fpa(['off'], message),
+                        self.send_message('Draft Mode has been disabled.')
+                    )
+                    self.draft_data.clear()
+                    self.state['draft'] = False
+                    return
+                await self.send_message(
+                    'Draft Mode is not currently enabled.'
+                )
+
+    async def ex_first(self, args, message):
+        if self._race_in_progress() or not self.state['draft'] or 'set_pick_order' in self.draft_data.keys():
+            return
+        
+        # Compare sender to draft_data 
+        user = message.get('user', {}).get('name')
+        racers = self.draft_data['racers']
+        for racer in racers:
+            if racer['name'] == user and 'higher_seed' not in racer.keys():
+                return
+            elif racer['name'] == user and racer['higher_seed'] == True:
+                racer['first_pick'] = True
+        await gather(
+            self.send_message(
+                f'{user} has elected to ban first. '
+            ),
+            sleep(1),
+            self.send_message(
+                f'{user}, please make your first ban with !ban <setting>.'
+            )
+        )
+        self.draft_data['set_pick_order'] = True
+
+    async def ex_second(self, args, message):
+        if self._race_in_progress() or not self.state['draft'] or 'set_pick_order' in self.draft_data.keys():
+            return
+        
+        # Compare sender to draft_data 
+        user = message.get('user', {}).get('name')
+        racers = self.draft_data['racers']
+        for racer in racers:
+            if racer['name'] == user and 'higher_seed' not in racer.keys():
+                return
+            elif racer['name'] == user and racer['higher_seed'] == True:
+                racer['first_pick'] = False
+        await gather(
+            self.send_message(
+                f'{user} has elected to ban second.'
+            ),
+            sleep(1)
+        )
+        for racer in racers:
+            if racer['name'] != user:
+                await self.send_message(
+                    f"{racer['name']}, please make your first ban with !ban <setting>."
+                )
+        self.draft_data['set_pick_order'] = True
+
+    async def ex_select(self, args, message):
+        pass
+
+    async def ex_ban(self, args, message):
+        pass
+
+    async def ex_settings(self, args, message):
+        pass
+
+    async def ex_confirm(self, args, message):
+        pass
+
     @monitor_cmd
     async def ex_lock(self, args, message):
         """
@@ -321,11 +420,8 @@ class RandoHandler(RaceHandler):
                 if not self.state['fpa']:
                     resp = 'Fair play agreement is not active.'
                 else:
-                    if self.state['draft'] and can_moderate(message):
-                        self.state['fpa'] = False
-                        resp = 'Fair play agreement is now deactivated.'
-                    else:
-                        resp = 'Fair play agreement cannot be deactivated for tournament matches.'
+                    self.state['fpa'] = False
+                    resp = 'Fair play agreement is now deactivated.'
         elif self.state['fpa']:
             if self._race_in_progress():
                 resp = '@everyone FPA has been invoked by @%(reply_to)s.'
@@ -431,6 +527,15 @@ class RandoHandler(RaceHandler):
         else:
             for name, preset in self.zsr.presets.items():
                 await self.send_message('%s – %s' % (name, preset['full_name']))
+
+    async def _is_qualified(self):
+        entrants = []
+        placements = self.zsr.load_qualifier_placements()
+        for entrant in self.data.get('entrants'):
+            for place in placements:
+                if entrant['user']['name'] == place['name']:
+                    entrants.append({'name': place['name'], 'rank': place['place']})
+        return entrants
 
     def _race_in_progress(self):
         return self.data.get('status').get('value') in ('pending', 'in_progress')
