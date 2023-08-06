@@ -134,7 +134,13 @@ class RandoHandler(RaceHandler):
                 ],
                 pinned=True,
             )
+            if 'S7 Tournament' in self.data.get('info'):
+                await self.send_message(
+                    'Tournament match detected. Use !draft to enter Draft Mode.'
+                )
             self.state['intro_sent'] = True
+        if 'draft' not in self.state:
+            self.state['draft'] = False
         if 'locked' not in self.state:
             self.state['locked'] = False
         if 'fpa' not in self.state:
@@ -161,6 +167,26 @@ class RandoHandler(RaceHandler):
             await self.unpin_message(self.state['pinned_msg'])
             del self.state['pinned_msg']
 
+    async def ex_draft(self, args, message):
+        """
+        Handle !draft command.
+
+        Set up room for Draft Mode.
+        """
+        if self._race_in_progress():
+            return
+        elif self.state['draft']:
+            return
+        self.state['draft'] = True
+        await gather(
+            self.send_message('Welcome to OoTR Draft Mode!'),
+            sleep(1)
+        )
+        await gather(
+            self.ex_fpa(['on'], message),
+            sleep(1)
+        )
+
     @monitor_cmd
     async def ex_lock(self, args, message):
         """
@@ -168,6 +194,11 @@ class RandoHandler(RaceHandler):
 
         Prevent seed rolling unless user is a race monitor.
         """
+        if self.state['draft']:
+            await self.send_message(
+                'Sorry, this command is disbaled for Draft Mode.'
+            )
+            return
         self.state['locked'] = True
         await self.send_message(
             'Lock initiated. I will now only roll seeds for race monitors.'
@@ -182,6 +213,11 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
+        elif self.state['draft']:
+            await self.send_message(
+                'Sorry, this command is disbaled for Draft Mode.'
+            )
+            return
         self.state['locked'] = False
         await self.send_message(
             'Lock released. Anyone may now roll a seed.'
@@ -193,6 +229,10 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
+        elif self.state['draft']:
+            await self.send_message(
+                'Sorry, this command is disbaled for Draft Mode.'
+            )
         await self.roll_and_send(args, message, encrypt=True, dev=False)
 
     async def ex_seeddev(self, args, message):
@@ -201,6 +241,10 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
+        elif self.state['draft']:
+            await self.send_message(
+                'Sorry, this command is disbaled for Draft Mode.'
+            )
         await self.roll_and_send(args, message, encrypt=True, dev=True)
 
     async def ex_spoilerseed(self, args, message):
@@ -209,6 +253,10 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
+        elif self.state['draft']:
+            await self.send_message(
+                'Sorry, this command is disbaled for Draft Mode.'
+            )
         await self.roll_and_send(args, message, encrypt=False, dev=False)
 
     async def ex_presets(self, args, message):
@@ -217,6 +265,10 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
+        elif self.state['draft']:
+            await self.send_message(
+                'Sorry, this command is disbaled for Draft Mode.'
+            )
         await self.send_presets(False)
 
     async def ex_presetsdev(self, args, message):
@@ -225,6 +277,10 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
+        elif self.state['draft']:
+            await self.send_message(
+                'Sorry, this command is disbaled for Draft Mode.'
+            )
         await self.send_presets(True)
 
     async def ex_fpa(self, args, message):
@@ -246,8 +302,11 @@ class RandoHandler(RaceHandler):
                 if not self.state['fpa']:
                     resp = 'Fair play agreement is not active.'
                 else:
-                    self.state['fpa'] = False
-                    resp = 'Fair play agreement is now deactivated.'
+                    if not self.state['draft']:
+                        self.state['fpa'] = False
+                        resp = 'Fair play agreement is now deactivated.'
+                    else:
+                        resp = 'Fair play agreement cannot be deactivated for tournament matches.'
         elif self.state['fpa']:
             if self._race_in_progress():
                 resp = '@everyone FPA has been invoked by @%(reply_to)s.'
