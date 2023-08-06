@@ -6,7 +6,7 @@ These are the commands currently supported by OoTR's RandoBot.
 
 Usable by: anyone (unless lock is present)
 
-Roll a race seed on ootrandomizer.com using the specified preset (if given) and 
+Roll a race seed on ootrandomizer.com using the specified preset (if given) and
 post a link to the generated seed in the race information.
 
 Available presets can be checked using the `!presets` command. If no preset is
@@ -15,15 +15,15 @@ given then "weekly" is assumed.
 If seed rolling has been locked with the `!lock` command then `!seed` will not
 generate a seed unless it's used by a race monitor or moderator.
 
-Once a seed has been generated using `!seed` (or `!spoilerseed`), subsequent 
+Once a seed has been generated using `!seed` (or `!spoilerseed`), subsequent
 calls to `!seed` will not work unless used by a moderator.
 
 ## !spoilerseed
 
 Usable by: anyone (unless lock is present)
 
-Roll a non-race seed (i.e. seed with spoiler log). This is identical to 
-`!seed`, except for the addition of the spoiler log. The patch file will also 
+Roll a non-race seed (i.e. seed with spoiler log). This is identical to
+`!seed`, except for the addition of the spoiler log. The patch file will also
 not be encrypted.
 
 ## !presets
@@ -31,12 +31,12 @@ not be encrypted.
 Usable by: anyone
 
 The bot will print out a list of available presets for use with the `!seed` or
-`!spoilerseed` commands. Each preset is usually a single word, e.g. "s4" or 
+`!spoilerseed` commands. Each preset is usually a single word, e.g. "s4" or
 "weekly".
 
 Presets are set by ootrandomizer.com and are not controlled by the bot itself.
 
-## !lock 
+## !lock
 
 Usable by: **race monitor/moderators only**
 
@@ -59,28 +59,14 @@ Enable, disable or invoke the fair-play agreement notifier. By default the FPA
 system is disabled, it can be toggled on by a race monitor or moderator with
 `!fpa on`. It can be toggled off again with `!fpa off`.
 
-When enabled, any user in the race room may use `!fpa` (with no 
-arguments) to invoke the FPA while the race is in progress. This will generate 
-an **@everyone** notification, so that all participants are made aware. FPA can 
+When enabled, any user in the race room may use `!fpa` (with no
+arguments) to invoke the FPA while the race is in progress. This will generate
+an **@everyone** notification, so that all participants are made aware. FPA can
 be invoked multiple times.
 
-It is recommended to enable desktop notifications using the bell icon in 
+It is recommended to enable desktop notifications using the bell icon in
 racetime.gg chat when using FPA. This way your browser will notify you
-immediately if there is a ping. 
+immediately if there is a ping.
 
-To prevent spam or misuse, it is also recommended that the **"Allow non-entrant 
+To prevent spam or misuse, it is also recommended that the **"Allow non-entrant
 chat"** race setting is disabled when conducting a race using FPA.
-
-## !breaks
-
-Usable by: anyone
-
-Enable or disable reminders for regular breaks during the race. No notifications
-are sent by default, they can be configured by specifying the duration of the
-breaks and their interval, for example with `!breaks 5m every 2h30m`. They can
-be toggled off again with `!breaks off`.
-
-The bot will post notifications 5 minutes ahead of, as well as at the start and
-end of each break. It is recommended to enable desktop notifications using the
-bell icon in racetime.gg chat when using breaks. This way your browser will
-notify you for these reminders.
