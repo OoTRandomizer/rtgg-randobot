@@ -17,6 +17,7 @@ class ZSR:
     settings_endpoint = 'https://raw.githubusercontent.com/TestRunnerSRL/OoT-Randomizer/release/data/presets_default.json'
     settings_dev_endpoint = 'https://raw.githubusercontent.com/TestRunnerSRL/OoT-Randomizer/Dev/data/presets_default.json'
     qualifier_placement_endpoint = 'https://ootrandomizer.com/tournament/seedsOnly'
+    draft_data = {}
 
     hash_map = {
         'Beans': 'HashBeans',
@@ -149,3 +150,13 @@ class ZSR:
     def load_qualifier_placements(self):
         placement = requests.get(self.qualifier_placement_endpoint).json()
         return placement
+    
+    def load_available_draft_settings(self):
+        settings = requests.get(self.settings_dev_endpoint).json()
+        available_settings = [name for name in settings['S6 Tournament'].keys() if name in (
+            'shopsanity', 'shuffle_scrubs', 'shuffle_expensive_merchants', 'tokensanity', 'shuffle_smallkeys',
+            'shuffle_dungeon_entrances', 'shuffle_grotto_entrances', 'shuffle_interior_entrances', 'bridge', 'trials', 
+            'spawn_positions', 'open_forest', 'zora_fountain', 'shuffle_gerudo_card', 'shuffle_frog_song_rupees', 
+            'dungeon_shortcuts_choice', 'shuffle_beans', 'free_bombchu_drops', 'shuffle_cows'
+            )]
+        return available_settings

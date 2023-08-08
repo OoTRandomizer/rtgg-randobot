@@ -146,6 +146,15 @@ class RandoHandler(RaceHandler):
             self.state['intro_sent'] = True
         if 'draft' not in self.state:
             self.state['draft'] = False
+        if self.state['draft'] is not None:
+            if 'draft_pick_order' not in self.state:
+                self.state['draft_pick_order'] = False
+            if 'draft_bans' not in self.state:
+                self.state['draft_bans'] = 0
+            if 'draft_picks' not in self.state:
+                self.state['draft_picks'] = 0
+            if 'draft_complete' not in self.state:
+                self.state['draft_complete'] = False
         if 'locked' not in self.state:
             self.state['locked'] = False
         if 'fpa' not in self.state:
@@ -185,22 +194,20 @@ class RandoHandler(RaceHandler):
                 'Both runners must be present before enabling Draft Mode.'
             )
             return
-        elif len(args) == 1 and args[0] in ('on', 'off'):
+        elif self._is_tournament_match and self.data.get('entrants_count') > 2:
+            await self.send_message(
+                'Draft Mode is only available for head-to-head matches.'
+            )
+            return
+        if len(args) == 1 and args[0] in ('on', 'off'):
             if args[0] == 'on' and not self.state['draft']:
                 self.state['draft'] = True
                 await gather(
-                    self.send_message('Welcome to OoTR Draft Mode!'),
-                    sleep(1)
-                )
-                await gather(
-                    self.ex_fpa(['on'], message),
-                    sleep(1)
-                )
-                await gather(
                     self.send_message(
+                        'Welcome to OoTR Draft Mode! '
                         'You can disable Draft Mode at any time with !draft off.'
                     ),
-                    sleep(1)
+                    self.ex_fpa(args, message)
                 )
                 
                 entrants = await self._is_qualified()
@@ -225,77 +232,93 @@ class RandoHandler(RaceHandler):
                         f"{entrants[1]['name']}, please select whether or not to ban first with !first or !second."
                     )
                     entrants[1]['higher_seed'] = True
-                self.draft_data.update({'racers': entrants})
+                self.zsr.draft_data.update({'racers': entrants})
+                self.zsr.draft_data['available_settings'] = self.zsr.load_available_draft_settings()
             
             elif args[0] == 'off':
                 if self.state['draft']:
                     await gather(
-                        self.ex_fpa(['off'], message),
+                        self.ex_fpa(args, message),
                         self.send_message('Draft Mode has been disabled.')
                     )
-                    self.draft_data.clear()
+                    self.zsr.draft_data.clear()
                     self.state['draft'] = False
+                    self.state['draft_pick_order'] = False
+                    self.state['draft_bans'] = 0
+                    self.state['draft_picks'] = 0
+                    self.state['draft_complete'] = False
                     return
                 await self.send_message(
                     'Draft Mode is not currently enabled.'
                 )
 
     async def ex_first(self, args, message):
-        if self._race_in_progress() or not self.state['draft'] or 'set_pick_order' in self.draft_data.keys():
+        if self._race_in_progress() or not self.state['draft'] or self.state['draft_pick_order']:
             return
         
         # Compare sender to draft_data 
         user = message.get('user', {}).get('name')
-        racers = self.draft_data['racers']
+        racers = self.zsr.draft_data['racers']
         for racer in racers:
             if racer['name'] == user and 'higher_seed' not in racer.keys():
                 return
             elif racer['name'] == user and racer['higher_seed'] == True:
                 racer['first_pick'] = True
-        await gather(
-            self.send_message(
-                f'{user} has elected to ban first. '
-            ),
-            sleep(1),
-            self.send_message(
-                f'{user}, please make your first ban with !ban <setting>.'
-            )
-        )
-        self.draft_data['set_pick_order'] = True
+                await self.send_message(
+                    f'{user}, please make your first ban with !ban <setting>. '
+                    'You may use !settings to view a list of available settings to ban'
+                )
+        self.zsr.draft_data['settings'] = {}
+        self.state['draft_pick_order'] = True
 
     async def ex_second(self, args, message):
-        if self._race_in_progress() or not self.state['draft'] or 'set_pick_order' in self.draft_data.keys():
+        if self._race_in_progress() or not self.state['draft'] or self.state['draft_pick_order']:
             return
         
         # Compare sender to draft_data 
         user = message.get('user', {}).get('name')
-        racers = self.draft_data['racers']
+        racers = self.zsr.draft_data['racers']
         for racer in racers:
             if racer['name'] == user and 'higher_seed' not in racer.keys():
                 return
             elif racer['name'] == user and racer['higher_seed'] == True:
                 racer['first_pick'] = False
-        await gather(
-            self.send_message(
-                f'{user} has elected to ban second.'
-            ),
-            sleep(1)
-        )
-        for racer in racers:
-            if racer['name'] != user:
+            elif racer['name'] != user:
                 await self.send_message(
-                    f"{racer['name']}, please make your first ban with !ban <setting>."
+                    f"{racer['name']}, please make your first ban with !ban <setting>. "
+                    'You may use !settings to view an updated list of available options.'
                 )
-        self.draft_data['set_pick_order'] = True
-
-    async def ex_select(self, args, message):
-        pass
-
+        self.zsr.draft_data['settings'] = {}
+        self.state['draft_pick_order'] = True
+    
     async def ex_ban(self, args, message):
+        if self._race_in_progress() or not self.state['draft'] or self.state['draft_bans'] > 3:
+            return
+        user = message.get('user', {}).get('name')
+        racers = self.zsr.draft_data['racers']
+        state = self.state['draft_bans']
+
+        self.zsr.draft_data['settings']['bans'] = []
+
+        # while state < 4:
+        #     for racer in racers:
+        #         if ('first_pick' not in racer.keys() and state % 2 != 0) or ('first_pick' in racer.keys() and state % 2 != 0):
+        #             await self.send_message(
+        #                 'Please wait for your turn to ban.'
+        #             )
+        #             return
+        #         else:
+        #             if 'first_pick' in racer.keys() and state % 2 == 0:
+        #                 if len(args) == 1 and args[0] in self.draft_data['selectable_settings']:
+
+    async def ex_set(self, args, message):
         pass
 
     async def ex_settings(self, args, message):
-        pass
+        await self.send_message(
+            'The following settings are available to modify: '
+            f"{', '.join(self.zsr.draft_data['available_settings'])}"
+        )
 
     async def ex_confirm(self, args, message):
         pass
