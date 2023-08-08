@@ -143,18 +143,17 @@ class RandoHandler(RaceHandler):
                 await self.send_message(
                     'Tournament match detected. Use !draft on to enable Draft Mode.'
                 )
+                if 'draft_mode' not in self.state:
+                    self.state['draft_mode'] = False
+                if 'draft_pick_order' not in self.state:
+                    self.state['draft_pick_order'] = False
+                if 'draft_bans' not in self.state:
+                    self.state['draft_bans'] = 0
+                if 'draft_picks' not in self.state:
+                    self.state['draft_picks'] = 0
+                if 'draft_complete' not in self.state:
+                    self.state['draft_complete'] = False
             self.state['intro_sent'] = True
-        if 'draft' not in self.state:
-            self.state['draft'] = False
-        if self.state['draft'] is not None:
-            if 'draft_pick_order' not in self.state:
-                self.state['draft_pick_order'] = False
-            if 'draft_bans' not in self.state:
-                self.state['draft_bans'] = 0
-            if 'draft_picks' not in self.state:
-                self.state['draft_picks'] = 0
-            if 'draft_complete' not in self.state:
-                self.state['draft_complete'] = False
         if 'locked' not in self.state:
             self.state['locked'] = False
         if 'fpa' not in self.state:
@@ -200,8 +199,8 @@ class RandoHandler(RaceHandler):
             )
             return
         if len(args) == 1 and args[0] in ('on', 'off'):
-            if args[0] == 'on' and not self.state['draft']:
-                self.state['draft'] = True
+            if args[0] == 'on' and not self.state['draft_mode']:
+                self.state['draft_mode'] = True
                 await gather(
                     self.send_message(
                         'Welcome to OoTR Draft Mode! '
@@ -215,9 +214,8 @@ class RandoHandler(RaceHandler):
                 if len(entrants) < 2:
                     await gather(
                         self.send_message(
-                            'Error fetching runner data. Please contact a tournament organizer. Disabling Draft Mode...'
+                            'Error fetching runner data. Please contact a tournament organizer.'
                         ),
-                        sleep(1),
                         self.ex_draft(['off'], message)
                     )
                 
@@ -235,14 +233,20 @@ class RandoHandler(RaceHandler):
                 self.zsr.draft_data.update({'racers': entrants})
                 self.zsr.draft_data['available_settings'] = self.zsr.load_available_draft_settings()
             
+            elif args[0] == 'on' and self.state['draft_mode']:
+                await self.send_message(
+                    'Draft Mode is already enabled.'
+                )
+                return
+            
             elif args[0] == 'off':
-                if self.state['draft']:
+                if self.state['draft_mode']:
                     await gather(
                         self.ex_fpa(args, message),
                         self.send_message('Draft Mode has been disabled.')
                     )
                     self.zsr.draft_data.clear()
-                    self.state['draft'] = False
+                    self.state['draft_mode'] = False
                     self.state['draft_pick_order'] = False
                     self.state['draft_bans'] = 0
                     self.state['draft_picks'] = 0
@@ -253,7 +257,7 @@ class RandoHandler(RaceHandler):
                 )
 
     async def ex_first(self, args, message):
-        if self._race_in_progress() or not self.state['draft'] or self.state['draft_pick_order']:
+        if self._race_in_progress() or not self.state['draft_mode'] or self.state['draft_pick_order']:
             return
         
         # Compare sender to draft_data 
@@ -272,7 +276,7 @@ class RandoHandler(RaceHandler):
         self.state['draft_pick_order'] = True
 
     async def ex_second(self, args, message):
-        if self._race_in_progress() or not self.state['draft'] or self.state['draft_pick_order']:
+        if self._race_in_progress() or not self.state['draft_mode'] or self.state['draft_pick_order']:
             return
         
         # Compare sender to draft_data 
@@ -292,7 +296,7 @@ class RandoHandler(RaceHandler):
         self.state['draft_pick_order'] = True
     
     async def ex_ban(self, args, message):
-        if self._race_in_progress() or not self.state['draft'] or self.state['draft_bans'] > 3:
+        if self._race_in_progress() or not self.state['draft_mode'] or self.state['draft_bans'] > 3:
             return
         user = message.get('user', {}).get('name')
         racers = self.zsr.draft_data['racers']
@@ -330,7 +334,7 @@ class RandoHandler(RaceHandler):
 
         Prevent seed rolling unless user is a race monitor.
         """
-        if self.state['draft']:
+        if self.state['draft_mode']:
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -349,7 +353,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state['draft']:
+        elif self.state['draft_mode']:
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -365,7 +369,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state['draft']:
+        elif self.state['draft_mode']:
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -378,7 +382,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state['draft']:
+        elif self.state['draft_mode']:
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -391,7 +395,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state['draft']:
+        elif self.state['draft_mode']:
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -404,7 +408,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state['draft']:
+        elif self.state['draft_mode']:
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -417,7 +421,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state['draft']:
+        elif self.state['draft_mode']:
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
