@@ -231,6 +231,7 @@ class RandoHandler(RaceHandler):
                     )
                     entrants[1]['higher_seed'] = True
                 self.zsr.draft_data.update({'racers': entrants})
+                self.zsr.draft_data.update({'settings': {'bans': []}})
                 self.zsr.draft_data['available_settings'] = self.zsr.load_available_draft_settings()
             
             elif args[0] == 'on' and self.state['draft_mode']:
@@ -272,7 +273,6 @@ class RandoHandler(RaceHandler):
                     f'{user}, please make your first ban with !ban <setting>. '
                     'You may use !settings to view a list of available settings to ban'
                 )
-        self.zsr.draft_data['settings'] = {}
         self.state['draft_pick_order'] = True
 
     async def ex_second(self, args, message):
@@ -292,30 +292,51 @@ class RandoHandler(RaceHandler):
                     f"{racer['name']}, please make your first ban with !ban <setting>. "
                     'You may use !settings to view an updated list of available options.'
                 )
-        self.zsr.draft_data['settings'] = {}
         self.state['draft_pick_order'] = True
     
     async def ex_ban(self, args, message):
-        if self._race_in_progress() or not self.state['draft_mode'] or self.state['draft_bans'] > 3:
+        if self._race_in_progress() or not self.state['draft_pick_order'] or self.state['draft_bans'] > 3:
             return
         user = message.get('user', {}).get('name')
         racers = self.zsr.draft_data['racers']
-        state = self.state['draft_bans']
 
-        self.zsr.draft_data['settings']['bans'] = []
-
-        # while state < 4:
+        # if self.state['draft_bans'] < 4:
         #     for racer in racers:
-        #         if ('first_pick' not in racer.keys() and state % 2 != 0) or ('first_pick' in racer.keys() and state % 2 != 0):
-        #             await self.send_message(
-        #                 'Please wait for your turn to ban.'
-        #             )
-        #             return
-        #         else:
-        #             if 'first_pick' in racer.keys() and state % 2 == 0:
-        #                 if len(args) == 1 and args[0] in self.draft_data['selectable_settings']:
-
-    async def ex_set(self, args, message):
+        #         if user in racer['name']:
+        #             if 'first_pick' in racer.keys():
+        #                 if not self.state['draft_bans'] % 2 == 0:
+        #                     return
+        #                 if len(args) == 1 and args[0] in self.zsr.draft_data['available_settings']:
+        #                     await self.send_message(
+        #                         f'{user} has elected to ban {args[0]}.'
+        #                     )  
+        #                     self.zsr.draft_data['available_settings'].remove(args[0])
+        #                     self.zsr.draft_data['settings']['bans'].append(args[0])
+        #                     self.state['draft_bans'] += 1
+        #         elif user not in racer['name'] and self.state['draft_bans'] <= 3:
+        #                 await self.send_message(
+        #                     f"{user}, please make your ban with !ban <setting>. "
+        #                     'You may use !settings to view an updated list of available options.'
+        #                 )
+        #                 return
+        #         if user == racer['name'] and 'first_pick' not in racer.keys():
+        #             if self.state['draft_bans'] % 2 == 0:
+        #                 return
+        #             if len(args) == 1 and args[0] in self.zsr.draft_data['available_settings']:
+        #                 await self.send_message(
+        #                     f'{user} has elected to ban {args[0]}.'
+        #                 )
+        #                 self.zsr.draft_data['available_settings'].remove(args[0])
+        #                 self.zsr.draft_data['settings']['bans'].append(args[0])
+        #                 self.state['draft_bans'] += 1
+        #                 if self.state['draft_bans'] <= 3:
+        #                     await self.send_message(
+        #                         f"{racer['name']}, please make your first ban with !ban <setting>. "
+        #                         'You may use !settings to view an updated list of available options.'
+        #                     )
+        #                 return
+            
+    async def ex_pick(self, args, message):
         pass
 
     async def ex_settings(self, args, message):
