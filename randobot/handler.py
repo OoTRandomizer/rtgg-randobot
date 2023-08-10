@@ -77,7 +77,7 @@ class RandoHandler(RaceHandler):
         self.midos_house = midos_house
 
     def _is_tournament_match(self):
-        if 'S7 Tournament' in self.data.get('info'):
+        if 'S7 Tournament' in self.data.get('info_user'):
             return True
         return False
 
@@ -143,16 +143,7 @@ class RandoHandler(RaceHandler):
                 await self.send_message(
                     'Tournament match detected. Use !draft on to enable Draft Mode.'
                 )
-                if 'draft_mode' not in self.state:
-                    self.state['draft_mode'] = False
-                if 'draft_pick_order' not in self.state:
-                    self.state['draft_pick_order'] = False
-                if 'draft_bans' not in self.state:
-                    self.state['draft_bans'] = 0
-                if 'draft_picks' not in self.state:
-                    self.state['draft_picks'] = 0
-                if 'draft_complete' not in self.state:
-                    self.state['draft_complete'] = False
+                self.state.setdefault('draft_data', {})
             self.state['intro_sent'] = True
         if 'locked' not in self.state:
             self.state['locked'] = False
@@ -199,8 +190,8 @@ class RandoHandler(RaceHandler):
             )
             return
         if len(args) == 1 and args[0] in ('on', 'off'):
-            if args[0] == 'on' and not self.state['draft_mode']:
-                self.state['draft_mode'] = True
+            if args[0] == 'on' and not self.state.get('draft_data').get('enabled'):
+                self.state.get('draft_data').update({'enabled': True})
                 await gather(
                     self.send_message(
                         'Welcome to OoTR Draft Mode! '
@@ -219,135 +210,132 @@ class RandoHandler(RaceHandler):
                         self.ex_draft(['off'], message)
                     )
                 
-                
                 await self.send_message(
-                    f"{entrants[0]['name']}, please select whether or not to ban first with !first or !second."
+                    f"{entrants[0].get('name')}, please select whether or not to ban first with !first or !second."
                 )
-                self.zsr.draft_data.update({
+                self.state.get('draft_data').update({
                     'racers': entrants,
+                    'pick_order': False,
+                    'num_bans': 0,
+                    'num_picks': 0,
+                    'confirmed': False,
                     'settings': {
                         'bans': []
                     },
                     'available_settings': self.zsr.load_draftable_settings()
                 })
             
-            elif args[0] == 'on' and self.state['draft_mode']:
+            elif args[0] == 'on' and self.state.get('draft_data').get('enabled'):
                 await self.send_message(
                     'Draft Mode is already enabled.'
                 )
                 return
             
             elif args[0] == 'off':
-                if self.state['draft_mode']:
+                if self.state.get('draft_data').get('enabled'):
                     await gather(
                         self.ex_fpa(args, message),
                         self.send_message('Draft Mode has been disabled.')
                     )
-                    self.zsr.draft_data.clear()
-                    self.state['draft_mode'] = False
-                    self.state['draft_pick_order'] = False
-                    self.state['draft_bans'] = 0
-                    self.state['draft_picks'] = 0
-                    self.state['draft_complete'] = False
+                    self.state.get('draft_data').clear()
                     return
                 await self.send_message(
                     'Draft Mode is not currently enabled.'
                 )
 
     async def ex_first(self, args, message):
-        if self._race_in_progress() or not self.state['draft_mode'] or self.state['draft_pick_order']:
+        if self._race_in_progress() or not self.state.get('draft_data').get('enabled') or self.state.get('draft_data').get('pick_order'):
             return
         
         # Compare sender to draft_data 
         user = message.get('user', {}).get('name')
-        racer = self.zsr.draft_data['racers']
-        if not racer[0]['name'] == user:
+        racer = self.state.get('draft_data').get('racers')
+        if not racer[0].get('name') == user:
             return
-        racer[0]['first_pick'] = True
+        racer[0].update({'first_pick': True})
         await self.send_message(
             f'{user}, please select a setting to ban with !ban <setting>. '
             'You may use !settings to view a list of available settings to ban'
         )
-        self.state['draft_pick_order'] = True
+        self.state.get('draft_data').update({'pick_order': True})
 
     async def ex_second(self, args, message):
-        if self._race_in_progress() or not self.state['draft_mode'] or self.state['draft_pick_order']:
+        if self._race_in_progress() or not self.state.get('draft_data').get('enabled') or self.state.get('draft_data').get('draft_pick_order'):
             return
         
         # Compare sender to draft_data 
         user = message.get('user', {}).get('name')
-        racer = self.zsr.draft_data['racers']
-        if not racer[0]['name'] == user:
+        racer = self.state.get('draft_data').get('racers')
+        if not racer[0].get('name') == user:
             return
-        racer[1]['first_pick'] = True
+        racer[1].update({'first_pick': True})
         await self.send_message(
-            f"{racer[1]['name']}, please select a setting to ban with !ban <setting>. "
+            f"{racer[1].get('name')}, please select a setting to ban with !ban <setting>. "
             'You may use !settings to view a list of available settings to ban'
         )
-        self.state['draft_pick_order'] = True
+        self.state.get('draft_data').update({'pick_order': True})
             
     async def ex_ban(self, args, message):
-        if self._race_in_progress() or not self.state['draft_mode'] or not self.state['draft_pick_order']:
+        if self._race_in_progress() or not self.state.get('draft_data').get('enabled') or not self.state.get('draft_data').get('pick_order'):
             return
-        elif self.state['draft_bans'] >= 4:
+        elif self.state.get('draft_data').get('num_bans') >= 4:
             return
        
         user = message.get('user', {}).get('name')
-        racer = self.zsr.draft_data['racers']
+        racer = self.state.get('draft_data').get('racers')
 
-        if user == racer[0]['name'] and 'first_pick' in racer[0].keys():
-            if not self.state['draft_bans'] % 2 == 0:
+        if user == racer[0].get('name') and 'first_pick' in racer[0].keys():
+            if not self.state.get('draft_data').get('num_bans') % 2 == 0:
                 return
-            if len(args) == 1 and args[0] in self.zsr.draft_data['available_settings']:
+            if len(args) == 1 and args[0] in self.state.get('draft_data').get('available_settings'):
                 await self.send_message(
-                    f"{racer[0]['name']} has elected to ban {args[0]}"
+                    f"{racer[0].get('name')} has elected to ban {args[0]}"
                 )
-                self.zsr.draft_data['settings']['bans'].append(args[0])
-                self.zsr.draft_data['available_settings'].remove(args[0])
-                self.state['draft_bans'] += 1
-        elif user == racer[0]['name'] and 'first_pick' not in racer[0].keys():
-            if self.state['draft_bans'] % 2 == 0:
+                self.state.get('draft_data').get('settings').get('bans').append(args[0])
+                self.state.get('draft_data').get('available_settings').remove(args[0])
+                self.state['draft_data']['num_bans'] += 1
+        elif user == racer[0].get('name') and 'first_pick' not in racer[0].keys():
+            if self.state.get('draft_data').get('num_bans') % 2 == 0:
                 return
-            if len(args) == 1 and args[0] in self.zsr.draft_data['available_settings']:
+            if len(args) == 1 and args[0] in self.state.get('draft_data').get('available_settings'):
                 await self.send_message(
-                    f"{racer[0]['name']} has elected to ban {args[0]}"
+                    f"{racer[0].get('name')} has elected to ban {args[0]}"
                 )
-                self.zsr.draft_data['settings']['bans'].append(args[0])
-                self.zsr.draft_data['available_settings'].remove(args[0])
-                self.state['draft_bans'] += 1
-        elif user == racer[1]['name'] and 'first_pick' in racer[1].keys():
-            if not self.state['draft_bans'] % 2 == 0:
+                self.state.get('draft_data').get('settings').get('bans').append(args[0])
+                self.state.get('draft_data').get('available_settings').remove(args[0])
+                self.state['draft_data']['num_bans'] += 1
+        elif user == racer[1].get('name') and 'first_pick' in racer[1].keys():
+            if not self.state.get('draft_data').get('num_bans') % 2 == 0:
                 return
-            if len(args) == 1 and args[0] in self.zsr.draft_data['available_settings']:
+            if len(args) == 1 and args[0] in self.state.get('draft_data').get('available_settings'):
                 await self.send_message(
-                    f"{racer[1]['name']} has elected to ban {args[0]}"
+                    f"{racer[1].get('name')} has elected to ban {args[0]}"
                 )
-                self.zsr.draft_data['settings']['bans'].append(args[0])
-                self.zsr.draft_data['available_settings'].remove(args[0])
-                self.state['draft_bans'] += 1
-        elif user == racer[1]['name'] and 'first_pick' not in racer[1].keys():
-            if self.state['draft_bans'] % 2 == 0:
+                self.state.get('draft_data').get('settings').get('bans').append(args[0])
+                self.state.get('draft_data').get('available_settings').remove(args[0])
+                self.state['draft_data']['num_bans'] += 1
+        elif user == racer[1].get('name') and 'first_pick' not in racer[1].keys():
+            if self.state.get('draft_data').get('num_bans') % 2 == 0:
                 return
-            if len(args) == 1 and args[0] in self.zsr.draft_data['available_settings']:
+            if len(args) == 1 and args[0] in self.state.get('draft_data').get('available_settings'):
                 await self.send_message(
-                    f"{racer[1]['name']} has elected to ban {args[0]}"
+                    f"{racer[1].get('name')} has elected to ban {args[0]}"
                 )
-                self.zsr.draft_data['settings']['bans'].append(args[0])
-                self.zsr.draft_data['available_settings'].remove(args[0])
-                self.state['draft_bans'] += 1
-        if self.state['draft_bans'] == 4:
-            await self.send_message(
-                'All bans have been recorded.'
-            )
+                self.state.get('draft_data').get('settings').get('bans').append(args[0])
+                self.state.get('draft_data').get('available_settings').remove(args[0])
+                self.state['draft_data']['num_bans'] += 1
 
     async def ex_pick(self, args, message):
         pass
 
     async def ex_settings(self, args, message):
+        if self._race_in_progress() or not self.state.get('draft_data').get('pick_order'):
+            return
         await self.send_message(
             'The following settings are available to modify: '
-            f"{', '.join(self.zsr.draft_data['available_settings'])}"
+            f"{', '.join(self.state.get('draft_data').get('available_settings'))}"
         )
+        print(self.state.get('draft_data'))
 
     async def ex_confirm(self, args, message):
         pass
@@ -359,7 +347,7 @@ class RandoHandler(RaceHandler):
 
         Prevent seed rolling unless user is a race monitor.
         """
-        if self.state['draft_mode']:
+        if self.state.get('draft_data').get('state'):
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -378,7 +366,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state['draft_mode']:
+        elif self.state.get('draft_data').get('state'):
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -394,7 +382,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state['draft_mode']:
+        elif self.state.get('draft_data').get('state'):
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -407,7 +395,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state['draft_mode']:
+        elif self.state.get('draft_data').get('state'):
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -420,7 +408,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state['draft_mode']:
+        elif self.state.get('draft_data').get('state'):
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -433,7 +421,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state['draft_mode']:
+        elif self.state.get('draft_data').get('state'):
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -446,7 +434,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state['draft_mode']:
+        elif self.state.get('draft_data').get('state'):
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )

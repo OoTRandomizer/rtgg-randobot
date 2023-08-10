@@ -17,7 +17,6 @@ class ZSR:
     settings_endpoint = 'https://raw.githubusercontent.com/TestRunnerSRL/OoT-Randomizer/release/data/presets_default.json'
     settings_dev_endpoint = 'https://raw.githubusercontent.com/TestRunnerSRL/OoT-Randomizer/Dev/data/presets_default.json'
     qualifier_placement_endpoint = 'https://ootrandomizer.com/tournament/seedsOnly'
-    draft_data = {}
 
     hash_map = {
         'Beans': 'HashBeans',
