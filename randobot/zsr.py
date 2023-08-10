@@ -151,7 +151,7 @@ class ZSR:
         placement = requests.get(self.qualifier_placement_endpoint).json()
         return placement
     
-    def load_available_draft_settings(self):
+    def load_draftable_settings(self):
         settings = requests.get(self.settings_dev_endpoint).json()
         available_settings = [name for name in settings['S6 Tournament'].keys() if name in (
             'shopsanity', 'shuffle_scrubs', 'shuffle_expensive_merchants', 'tokensanity', 'shuffle_smallkeys',
