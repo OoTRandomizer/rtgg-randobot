@@ -335,7 +335,6 @@ class RandoHandler(RaceHandler):
             'The following settings are available to modify: '
             f"{', '.join(self.state.get('draft_data').get('available_settings'))}"
         )
-        print(self.state.get('draft_data'))
 
     async def ex_confirm(self, args, message):
         pass
