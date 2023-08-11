@@ -320,7 +320,7 @@ class RandoHandler(RaceHandler):
 
         Prevent seed rolling unless user is a race monitor.
         """
-        if self.state.get('draft_data').get('state'):
+        if self.state.get('draft_data').get('enabled'):
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -339,7 +339,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state.get('draft_data').get('state'):
+        elif self.state.get('draft_data').get('enabled'):
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -355,7 +355,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state.get('draft_data').get('state'):
+        elif self.state.get('draft_data').get('enabled'):
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -368,7 +368,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state.get('draft_data').get('state'):
+        elif self.state.get('draft_data').get('enabled'):
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -381,7 +381,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state.get('draft_data').get('state'):
+        elif self.state.get('draft_data').get('enabled'):
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -394,7 +394,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state.get('draft_data').get('state'):
+        elif self.state.get('draft_data').get('enabled'):
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
@@ -407,7 +407,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state.get('draft_data').get('state'):
+        elif self.state.get('draft_data').get('enabled'):
             await self.send_message(
                 'Sorry, this command is disabled for Draft Mode.'
             )
