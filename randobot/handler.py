@@ -572,9 +572,9 @@ class RandoHandler(RaceHandler):
         placements = self.zsr.load_qualifier_placements()
         for entrant in self.data.get('entrants'):
             for place in placements:
-                if entrant['user']['name'] == place['name']:
-                    entrants.append({'name': place['name'], 'rank': place['place']})
-        return sorted(entrants, key=lambda entrant: entrant['rank'])
+                if entrant.get('user').get('name') == place.get('name'):
+                    entrants.append({'name': place.get('name'), 'rank': place.get('place')})
+        return sorted(entrants, key=lambda entrant: entrant.get('rank'))
 
     def _race_in_progress(self):
         return self.data.get('status').get('value') in ('pending', 'in_progress')
