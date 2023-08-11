@@ -282,48 +282,22 @@ class RandoHandler(RaceHandler):
             return
        
         user = message.get('user', {}).get('name')
-        racer = self.state.get('draft_data').get('racers')
+        racers = self.state.get('draft_data').get('racers')
 
-        if user == racer[0].get('name') and 'first_pick' in racer[0].keys():
-            if not self.state.get('draft_data').get('num_bans') % 2 == 0:
-                return
-            if len(args) == 1 and args[0] in self.state.get('draft_data').get('available_settings'):
-                await self.send_message(
-                    f"{racer[0].get('name')} has elected to ban {args[0]}"
-                )
-                self.state.get('draft_data').get('settings').get('bans').append(args[0])
-                self.state.get('draft_data').get('available_settings').remove(args[0])
-                self.state['draft_data']['num_bans'] += 1
-        elif user == racer[0].get('name') and 'first_pick' not in racer[0].keys():
-            if self.state.get('draft_data').get('num_bans') % 2 == 0:
-                return
-            if len(args) == 1 and args[0] in self.state.get('draft_data').get('available_settings'):
-                await self.send_message(
-                    f"{racer[0].get('name')} has elected to ban {args[0]}"
-                )
-                self.state.get('draft_data').get('settings').get('bans').append(args[0])
-                self.state.get('draft_data').get('available_settings').remove(args[0])
-                self.state['draft_data']['num_bans'] += 1
-        elif user == racer[1].get('name') and 'first_pick' in racer[1].keys():
-            if not self.state.get('draft_data').get('num_bans') % 2 == 0:
-                return
-            if len(args) == 1 and args[0] in self.state.get('draft_data').get('available_settings'):
-                await self.send_message(
-                    f"{racer[1].get('name')} has elected to ban {args[0]}"
-                )
-                self.state.get('draft_data').get('settings').get('bans').append(args[0])
-                self.state.get('draft_data').get('available_settings').remove(args[0])
-                self.state['draft_data']['num_bans'] += 1
-        elif user == racer[1].get('name') and 'first_pick' not in racer[1].keys():
-            if self.state.get('draft_data').get('num_bans') % 2 == 0:
-                return
-            if len(args) == 1 and args[0] in self.state.get('draft_data').get('available_settings'):
-                await self.send_message(
-                    f"{racer[1].get('name')} has elected to ban {args[0]}"
-                )
-                self.state.get('draft_data').get('settings').get('bans').append(args[0])
-                self.state.get('draft_data').get('available_settings').remove(args[0])
-                self.state['draft_data']['num_bans'] += 1
+        for racer in racers:
+            if (self.state.get('draft_data').get('num_bans') % 2 == 0 and racer.get('first_pick') and racer.get('name') == user) or \
+               (not self.state.get('draft_data').get('num_bans') % 2 == 0 and not racer.get('first_pick') and racer.get('name') == user):
+                if len(args) == 1 and args[0] in self.state.get('draft_data').get('available_settings'):
+                    await self.send_message(
+                        f'{user} has elected to ban {args[0]}.'
+                    )
+                    self.state.get('draft_data').get('settings').get('bans').append(args[0])
+                    self.state.get('draft_data').get('available_settings').remove(args[0])
+                    self.state['draft_data']['num_bans'] += 1
+        if self.state.get('draft_data').get('num_bans') == 4:
+            await self.send_message(
+                'All bans have been recorded.'
+            )
 
     async def ex_pick(self, args, message):
         pass
