@@ -76,8 +76,8 @@ class RandoHandler(RaceHandler):
         self.zsr = zsr
         self.midos_house = midos_house
 
-    def _is_tournament_match(self):
-        if 'S7 Tournament' in self.data.get('info_user'):
+    def _is_s7_match(self):
+        if 'S7' in self.data.get('info_user'):
             return True
         return False
 
@@ -139,9 +139,9 @@ class RandoHandler(RaceHandler):
                 ],
                 pinned=True,
             )
-            if self._is_tournament_match():
+            if self._is_s7_match():
                 await self.send_message(
-                    'Tournament match detected. Use !draft on to enable Draft Mode.'
+                    'Season 7 race detected. Use !s7 <tournament | pickup> to enable Draft Mode.'
                 )
                 self.state.setdefault('draft_data', {})
             self.state['intro_sent'] = True
@@ -171,45 +171,51 @@ class RandoHandler(RaceHandler):
             await self.unpin_message(self.state['pinned_msg'])
             del self.state['pinned_msg']
 
-    async def ex_draft(self, args, message):
+    async def ex_s7(self, args, message):
         """
-        Handle !draft commands.
+        Handle !s7 commands.
 
         Set up room for Draft Mode.
         """
-        if self._race_in_progress() or not self._is_tournament_match():
+        if self._race_in_progress() or not self._is_s7_match():
             return
-        elif self._is_tournament_match and self.data.get('entrants_count') < 2:
+        elif self._is_s7_match and self.data.get('entrants_count') < 2:
             await self.send_message(
-                'Both runners must be present before enabling Draft Mode.'
+                'Two runners must be present before enabling Draft Mode.'
             )
             return
-        elif self._is_tournament_match and self.data.get('entrants_count') > 2:
+        elif self._is_s7_match and self.data.get('entrants_count') > 2:
             await self.send_message(
                 'Draft Mode is only available for head-to-head matches.'
             )
             return
-        if len(args) == 1 and args[0] in ('on', 'off'):
-            if args[0] == 'on' and not self.state.get('draft_data').get('enabled'):
-                self.state.get('draft_data').update({'enabled': True})
+        if len(args) == 1 and args[0] in ('tournament', 'pickup', 'off'):
+            if args[0] in ('tournament', 'pickup') and not self.state.get('draft_data').get('enabled'):
+                self.state.get('draft_data').update({
+                    'enabled': True,
+                    'race_type': args[0]
+                    })
                 await gather(
                     self.send_message(
                         'Welcome to OoTR Draft Mode! '
-                        'You can disable Draft Mode at any time with !draft off.'
+                        'You can disable Draft Mode at any time with !s7 off.'
                     ),
-                    self.ex_fpa(args, message)
+                    self.ex_fpa(args, message),
+                    self.send_message(
+                        f'You have indicated that this is a {args[0]} race.'
+                    )
                 )
                 
-                entrants = await self._is_qualified()
+                entrants = await self.determine_pick_order()
                 # If we can't verify qualification data, disable Draft Mode
                 if len(entrants) < 2:
                     await gather(
                         self.send_message(
-                            'Error fetching runner data. Please contact a tournament organizer.'
+                            'Error fetching runner data. Exiting Draft Mode...'
                         ),
-                        self.ex_draft(['off'], message)
+                        self.ex_s7(['off'], message)
                     )
-                
+                print(entrants)
                 await self.send_message(
                     f"{entrants[0].get('name')}, please select whether or not to ban first with !first or !second."
                 )
@@ -248,13 +254,13 @@ class RandoHandler(RaceHandler):
             return
         
         # Compare sender to draft_data 
-        user = message.get('user', {}).get('name')
+        reply_to = message.get('user', {}).get('name')
         racer = self.state.get('draft_data').get('racers')
-        if not racer[0].get('name') == user:
+        if not racer[0].get('name') == reply_to:
             return
         racer[0].update({'first_pick': True})
         await self.send_message(
-            f'{user}, please select a setting to ban with !ban <setting>. '
+            f'{reply_to}, please select a setting to ban with !ban <setting>. '
             'You may use !settings to view a list of available settings to ban'
         )
         self.state.get('draft_data').update({'pick_order': True})
@@ -264,9 +270,9 @@ class RandoHandler(RaceHandler):
             return
         
         # Compare sender to draft_data 
-        user = message.get('user', {}).get('name')
+        reply_to = message.get('user', {}).get('name')
         racer = self.state.get('draft_data').get('racers')
-        if not racer[0].get('name') == user:
+        if not racer[0].get('name') == reply_to:
             return
         racer[1].update({'first_pick': True})
         await self.send_message(
@@ -279,17 +285,20 @@ class RandoHandler(RaceHandler):
         if self._race_in_progress() or not self.state.get('draft_data').get('enabled') or not self.state.get('draft_data').get('pick_order'):
             return
         elif self.state.get('draft_data').get('num_bans') >= 4:
+            await self.send_message(
+                'Ban selections have already been made.'
+            )
             return
        
-        user = message.get('user', {}).get('name')
+        reply_to = message.get('user', {}).get('name')
         racers = self.state.get('draft_data').get('racers')
 
         for racer in racers:
-            if (self.state.get('draft_data').get('num_bans') % 2 == 0 and racer.get('first_pick') and racer.get('name') == user) or \
-               (not self.state.get('draft_data').get('num_bans') % 2 == 0 and not racer.get('first_pick') and racer.get('name') == user):
+            if (self.state.get('draft_data').get('num_bans') % 2 == 0 and racer.get('first_pick') and racer.get('name') == reply_to) or \
+               (not self.state.get('draft_data').get('num_bans') % 2 == 0 and not racer.get('first_pick') and racer.get('name') == reply_to):
                 if len(args) == 1 and args[0] in self.state.get('draft_data').get('available_settings'):
                     await self.send_message(
-                        f'{user} has elected to ban {args[0]}.'
+                        f'{reply_to} has elected to ban {args[0]}.'
                     )
                     self.state.get('draft_data').get('settings').get('bans').append(args[0])
                     self.state.get('draft_data').get('available_settings').remove(args[0])
@@ -541,14 +550,19 @@ class RandoHandler(RaceHandler):
             for name, preset in self.zsr.presets.items():
                 await self.send_message('%s – %s' % (name, preset['full_name']))
 
-    async def _is_qualified(self):
+    async def determine_pick_order(self):
         entrants = []
-        placements = self.zsr.load_qualifier_placements()
-        for entrant in self.data.get('entrants'):
-            for place in placements:
-                if entrant.get('user').get('name') == place.get('name'):
-                    entrants.append({'name': place.get('name'), 'rank': place.get('place')})
-        return sorted(entrants, key=lambda entrant: entrant.get('rank'))
+        if self.state.get('draft_data').get('race_type') == 'tournament':
+            placements = self.zsr.load_qualifier_placements()
+            for entrant in self.data.get('entrants'):
+                for place in placements:
+                    if entrant.get('user').get('name') == place.get('name'):
+                        entrants.append({'name': place.get('name'), 'rank': place.get('place')})
+            return sorted(entrants, key=lambda entrant: entrant.get('rank'))    
+        elif self.state.get('draft_data').get('race_type') == 'pickup':
+            for entrant in self.data.get('entrants'):
+                entrants.append({'name': entrant.get('user').get('name'), 'score': (entrant.get('score') if entrant.get('score') else 0)})
+            return sorted(entrants, key=lambda entrant: entrant.get('score'), reverse=True)
 
     def _race_in_progress(self):
         return self.data.get('status').get('value') in ('pending', 'in_progress')
