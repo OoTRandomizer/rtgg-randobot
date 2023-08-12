@@ -76,7 +76,7 @@ class RandoHandler(RaceHandler):
         self.zsr = zsr
         self.midos_house = midos_house
 
-    def _is_s7_match(self):
+    def _is_s7_race(self):
         if 'S7' in self.data.get('info_user'):
             return True
         return False
@@ -139,9 +139,10 @@ class RandoHandler(RaceHandler):
                 ],
                 pinned=True,
             )
-            if self._is_s7_match():
+            if self._is_s7_race():
                 await self.send_message(
-                    'Season 7 race detected. Use !s7 <tournament | pickup> to enable Draft Mode.'
+                    'If this is a Season 7 race, use !s7 tournament for bracket matches or '
+                    '!s7 pickup for pickup races.'
                 )
                 self.state.setdefault('draft_data', {})
             self.state['intro_sent'] = True
@@ -177,33 +178,32 @@ class RandoHandler(RaceHandler):
 
         Set up room for Draft Mode.
         """
-        if self._race_in_progress() or not self._is_s7_match():
+        if self._race_in_progress() or not self._is_s7_race():
             return
-        elif self._is_s7_match and self.data.get('entrants_count') < 2:
+        elif self._is_s7_race and self.data.get('entrants_count') < 2:
             await self.send_message(
                 'Two runners must be present before enabling Draft Mode.'
             )
             return
-        elif self._is_s7_match and self.data.get('entrants_count') > 2:
+        elif self._is_s7_race and self.data.get('entrants_count') > 2:
             await self.send_message(
                 'Draft Mode is only available for head-to-head matches.'
             )
             return
-        if len(args) == 1 and args[0] in ('tournament', 'pickup', 'off'):
+        if len(args) == 1 and args[0] in ('tournament', 'pickup', 'cancel'):
             if args[0] in ('tournament', 'pickup') and not self.state.get('draft_data').get('enabled'):
                 self.state.get('draft_data').update({
                     'enabled': True,
                     'race_type': args[0]
                     })
-                await gather(
-                    self.send_message(
-                        'Welcome to OoTR Draft Mode! '
-                        'You can disable Draft Mode at any time with !s7 off.'
-                    ),
-                    self.ex_fpa(args, message),
-                    self.send_message(
-                        f'You have indicated that this is a {args[0]} race.'
-                    )
+                await self.send_message(
+                    'Welcome to OoTR Draft Mode! '
+                    'You can disable Draft Mode at any time with !s7 cancel.'
+                ),
+                if self.state.get('draft_data').get('race_type') == 'tournament':
+                    await self.ex_fpa(['on'], message),
+                await self.send_message(
+                    f'You have indicated that this is a {args[0]} race.'
                 )
                 
                 entrants = await self.determine_pick_order()
@@ -211,9 +211,9 @@ class RandoHandler(RaceHandler):
                 if len(entrants) < 2:
                     await gather(
                         self.send_message(
-                            'Error fetching runner data. Exiting Draft Mode...'
+                            'Error fetching racer data. Exiting Draft Mode...'
                         ),
-                        self.ex_s7(['off'], message)
+                        self.ex_s7(['cancel'], message)
                     )
                 print(entrants)
                 await self.send_message(
@@ -237,12 +237,11 @@ class RandoHandler(RaceHandler):
                 )
                 return
             
-            elif args[0] == 'off':
+            elif args[0] == 'cancel':
                 if self.state.get('draft_data').get('enabled'):
-                    await gather(
-                        self.ex_fpa(args, message),
-                        self.send_message('Draft Mode has been disabled.')
-                    )
+                    if self.state.get('draft_data').get('race_type') == 'tournament':
+                        await self.ex_fpa(['off'], message),
+                    await self.send_message('Draft Mode has been disabled.')
                     self.state.get('draft_data').clear()
                     return
                 await self.send_message(
