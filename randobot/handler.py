@@ -215,7 +215,6 @@ class RandoHandler(RaceHandler):
                         ),
                         self.ex_s7(['cancel'], message)
                     )
-                print(entrants)
                 await self.send_message(
                     f"{entrants[0].get('name')}, please select whether or not to ban first with !first or !second."
                 )
@@ -226,9 +225,10 @@ class RandoHandler(RaceHandler):
                     'num_picks': 0,
                     'confirmed': False,
                     'settings': {
-                        'bans': []
+                        'bans': [],
+                        'picks': {}
                     },
-                    'available_settings': self.zsr.load_draftable_settings()
+                    'draftable_settings': self.zsr.load_draftable_settings()
                 })
             
             elif args[0] == 'on' and self.state.get('draft_data').get('enabled'):
@@ -260,7 +260,7 @@ class RandoHandler(RaceHandler):
         racer[0].update({'first_pick': True})
         await self.send_message(
             f'{reply_to}, please select a setting to ban with !ban <setting>. '
-            'You may use !settings to view a list of available settings to ban'
+            'You may use !settings to view a list of available settings to select from.'
         )
         self.state.get('draft_data').update({'pick_order': True})
 
@@ -276,7 +276,7 @@ class RandoHandler(RaceHandler):
         racer[1].update({'first_pick': True})
         await self.send_message(
             f"{racer[1].get('name')}, please select a setting to ban with !ban <setting>. "
-            'You may use !settings to view a list of available settings to ban'
+            'You may use !settings to view a list of available settings to select from.'
         )
         self.state.get('draft_data').update({'pick_order': True})
             
@@ -295,12 +295,12 @@ class RandoHandler(RaceHandler):
         for racer in racers:
             if (self.state.get('draft_data').get('num_bans') % 2 == 0 and racer.get('first_pick') and racer.get('name') == reply_to) or \
                (not self.state.get('draft_data').get('num_bans') % 2 == 0 and not racer.get('first_pick') and racer.get('name') == reply_to):
-                if len(args) == 1 and args[0] in self.state.get('draft_data').get('available_settings'):
+                if len(args) == 1 and args[0] in self.state.get('draft_data').get('draftable_settings'):
                     await self.send_message(
                         f'{reply_to} has elected to ban {args[0]}.'
                     )
                     self.state.get('draft_data').get('settings').get('bans').append(args[0])
-                    self.state.get('draft_data').get('available_settings').remove(args[0])
+                    self.state.get('draft_data').get('draftable_settings').remove(args[0])
                     self.state['draft_data']['num_bans'] += 1
         if self.state.get('draft_data').get('num_bans') == 4:
             await self.send_message(
@@ -315,7 +315,7 @@ class RandoHandler(RaceHandler):
             return
         await self.send_message(
             'The following settings are available to modify: '
-            f"{', '.join(self.state.get('draft_data').get('available_settings'))}"
+            f"{', '.join(self.state.get('draft_data').get('draftable_settings'))}"
         )
 
     async def ex_confirm(self, args, message):
