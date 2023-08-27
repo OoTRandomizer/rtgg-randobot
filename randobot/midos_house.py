@@ -12,7 +12,7 @@ class MidosHouse:
         self.cache_expires_at = time.monotonic()
 
     async def handles_custom_goal(self, goal_name):
-        if time.monotonic() > self.cache_expires_at:
+        if time.monotonic() >= self.cache_expires_at:
             try:
                 query = gql.gql("""
                     query {
