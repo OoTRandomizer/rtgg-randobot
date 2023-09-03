@@ -1,9 +1,8 @@
-from asyncio import create_task, gather, sleep
+from asyncio import sleep
 import datetime
-import json
 import re
-import isodate
-from racetime_bot import RaceHandler, monitor_cmd, can_moderate, can_monitor
+import random
+from racetime_bot import RaceHandler, monitor_cmd, can_moderate, can_monitor, msg_actions
 
 
 def natjoin(sequence, default):
@@ -64,6 +63,13 @@ class RandoHandler(RaceHandler):
     seed_url = 'https://ootrandomizer.com/seed/get?id=%s'
     stop_at = ['cancelled', 'finished']
     max_status_checks = 50
+    greetings = (
+        'Let me roll a seed for you. I promise it won\'t hurt.',
+        'It\'s dangerous to go alone. Take this?',
+        'I promise that today\'s seed will be nice.',
+        'I can roll a race seed for you. If you dare.',
+        'All rolled seeds comply with the laws of thermodynamics.',
+    )
 
     def __init__(self, zsr, midos_house, **kwargs):
         super().__init__(**kwargs)
@@ -91,20 +97,69 @@ class RandoHandler(RaceHandler):
             return
         if not self.state.get('intro_sent') and not self._race_in_progress():
             await self.send_message(
-                'Welcome to OoTR! Create a release seed with !seed <preset> or a latest dev seed with !seeddev <preset>'
-            )
-            await self.send_message(
-                'If no preset is selected, weekly settings will be used. '
-                'Use !race to generate a release seed with a spoiler log.'
-            )
-            await self.send_message(
-                'For a list of presets, use !presets for release and !presetsdev for dev'
+                'Welcome to OoTR! ' + random.choice(self.greetings),
+                actions=[
+                    msg_actions.Action(
+                        label='Roll seed',
+                        help_text='Create a seed using the latest release',
+                        message='!seed ${preset}',
+                        submit='Roll race seed',
+                        survey=msg_actions.Survey(
+                            msg_actions.SelectInput(
+                                name='preset',
+                                label='Preset',
+                                options={key: value['full_name'] for key, value in self.zsr.presets.items()},
+                                default='weekly',
+                            ),
+                        ),
+                    ),
+                    msg_actions.Action(
+                        label='Dev seed',
+                        help_text='Create a seed using the latest dev branch',
+                        message='!seeddev ${preset}',
+                        submit='Roll dev seed',
+                        survey=msg_actions.Survey(
+                            msg_actions.SelectInput(
+                                name='preset',
+                                label='Preset',
+                                options={key: value['full_name'] for key, value in self.zsr.presets_dev.items()},
+                                default='weekly',
+                            ),
+                        ),
+                    ),
+                    msg_actions.ActionLink(
+                        label='Help',
+                        url='https://github.com/deains/ootr-randobot/blob/master/COMMANDS.md',
+                    ),
+                ],
+                pinned=True,
             )
             self.state['intro_sent'] = True
         if 'locked' not in self.state:
             self.state['locked'] = False
         if 'fpa' not in self.state:
             self.state['fpa'] = False
+
+    async def end(self):
+        if self.state.get('pinned_msg'):
+            await self.unpin_message(self.state['pinned_msg'])
+
+    async def chat_message(self, data):
+        message = data.get('message', {})
+        if (
+            message.get('is_bot')
+            and message.get('bot') == 'RandoBot'
+            and message.get('is_pinned')
+            and message.get('message_plain', '').startswith('Welcome to OoTR!')
+        ):
+            self.state['pinned_msg'] = message.get('id')
+        return await super().chat_message(data)
+
+    async def race_data(self, data):
+        await super().race_data(data)
+        if self._race_in_progress() and self.state.get('pinned_msg'):
+            await self.unpin_message(self.state['pinned_msg'])
+            del self.state['pinned_msg']
 
     @monitor_cmd
     async def ex_lock(self, args, message):
@@ -255,6 +310,9 @@ class RandoHandler(RaceHandler):
             % {'reply_to': reply_to or 'Okay', 'seed_uri': seed_uri}
         )
         await self.set_bot_raceinfo(seed_uri)
+        if self.state.get('pinned_msg'):
+            await self.unpin_message(self.state['pinned_msg'])
+            del self.state['pinned_msg']
 
         self.state['seed_id'] = seed_id
         self.state['status_checks'] = 0
