@@ -150,12 +150,264 @@ class ZSR:
         placement = requests.get(self.qualifier_placement_endpoint).json()
         return placement
     
-    def load_draftable_settings(self):
-        settings = requests.get(self.settings_dev_endpoint).json()
-        available_settings = [name for name in settings['S6 Tournament'].keys() if name in (
-            'shopsanity', 'shuffle_scrubs', 'shuffle_expensive_merchants', 'tokensanity', 'shuffle_smallkeys',
-            'shuffle_dungeon_entrances', 'shuffle_grotto_entrances', 'shuffle_interior_entrances', 'bridge', 'trials', 
-            'spawn_positions', 'open_forest', 'zora_fountain', 'shuffle_gerudo_card', 'shuffle_frog_song_rupees', 
-            'dungeon_shortcuts_choice', 'shuffle_beans', 'free_bombchu_drops', 'shuffle_cows'
-            )]
-        return available_settings
+    def load_draft_settings(self):
+        return {
+            'major': {
+                'bridge': {
+                    'meds': {
+                        'bridge': 'medallions'
+                    },
+                    'open': {
+                        'bridge': 'open',
+                        'shuffle_ganon_bosskey': 'medallions'
+                    }
+                },
+                'deku': {
+                    'closed': {
+                        'open_forest': 'closed_deku'
+                    },
+                    'open': {
+                        'open_forest': 'open'
+                    }
+                },
+                'interiors': {
+                    'vanilla': {
+                        'shuffle_interior_entrances': 'off'
+                    },
+                    'shuffled': {
+                        'shuffle_interior_entrances': 'all'
+                    }
+                },
+                'dungeons': {
+                    'vanilla': {
+                        'shuffle_dungeon_entrances': 'off'
+                    },
+                    'shuffled': {
+                        'shuffle_dungeon_entrances': 'simple'
+                    }
+                },
+                'grottos': {
+                    'vanilla': {
+                        'shuffle_grotto_entrances': False
+                    },
+                    'shuffled': {
+                        'shuffle_grotto_entrances': True
+                    }
+                },
+                'shops': {
+                    'vanilla': {
+                        'shopsanity': 'off'
+                    },
+                    '4': {
+                        'shopsanity': 4,
+                        'start_with_rupees': True
+                    }
+                },
+                'tokens': {
+                    'vanilla': {
+                        'tokensanity': 'off'
+                    },
+                    'dungeons': {
+                        'tokensanity': 'dungeons'
+                    },
+                    'overworld': {
+                        'tokensanity': 'overworld'
+                    }
+                },
+                'scrubs': {
+                    'vanilla': {
+                        'shuffle_scrubs': 'off'
+                    },
+                    'shuffled': {
+                        'shuffle_scrubs': 'low'
+                    }
+                },
+                'keys': {
+                    'default': {
+                        'shuffle_smallkeys': 'dungeon',
+                        'shuffle_bosskeys': 'dungeon'
+                    },
+                    'keysy': {
+                        'shuffle_smallkeys': 'remove',
+                        'shuffle_bosskeys': 'remove'
+                    },
+                    'anywhere': {
+                        'shuffle_smallkeys': 'keysanity',
+                        'key_rings_choice': 'all',
+                        'keyring_give_bk': True
+                    }
+                },
+                'required_only': {
+                    'off': {
+                        'reachable_locations': 'all'
+                    },
+                    'on': {
+                        'reachable_locations': 'beatable'
+                    }
+                },
+                'fountain': {
+                    'closed': {
+                        'zora_fountain': 'closed'
+                    },
+                    'open': {
+                        'zora_fountain': 'open'
+                    }
+                },
+                'cows': {
+                    'vanilla': {
+                        'shuffle_cows': False
+                    },
+                    'shuffled': {
+                        'shuffle_cows': True
+                    }
+                },
+                'gerudo_card': {
+                    'vanilla': {
+                        'shuffle_gerudo_card': False
+                    },
+                    'shuffled': {
+                        'shuffle_gerudo_card': True
+                    }
+                },
+                'trials': {
+                    'off': {
+                        'trials': 0
+                    },
+                    '3': {
+                        'trials': 3
+                    }
+                }
+            },
+            'minor': {
+                'starting_age': {
+                    'random': {
+                        'starting_age': 'random'
+                    },
+                    'child': {
+                        'starting_age': 'child'
+                    },
+                    'adult': {
+                        'starting_age': 'adult'
+                    }
+                },
+                'spawns': {
+                    'vanilla': {
+                        'spawn_positions': []
+                    },
+                    'random': {
+                        'spawn_positions': ['child', 'adult']
+                    }
+                },
+                'consumables': {
+                    'startwith': {
+                        'start_with_consumables': True
+                    },
+                    'none': {
+                        'start_with_consumables': False
+                    }
+                },
+                'rupees': {
+                    'none': {
+                        'start_with_rupees': False
+                    },
+                    'startwith': {
+                        'start_with_rupees': True
+                    }
+                },
+                'cuccos': {
+                    '7': {
+                        'chicken_count': 7
+                    },
+                    '1': {
+                        'chicken_count': 1
+                    }
+                },
+                'scarecrow': {
+                    'vanilla': {
+                        'free_scarecrow': False
+                    },
+                    'free': {
+                        'free_scarecrow': True
+                    }
+                },
+                'camc': {
+                    'on': {
+                        'correct_chest_appearances': 'both'
+                    },
+                    'off': {
+                        'correct_chest_appearances': 'off'
+                    }
+                },
+                'mask_quest': {
+                    'default': {
+                        'complete_mask_quest': False
+                    },
+                    'complete': {
+                        'complete_mask_quest': True,
+                        'fast_bunny_hood': False
+                    }
+                },
+                'blue_fire_arrows': {
+                    'off': {
+                        'blue_fire_arrows': False
+                    },
+                    'on': {
+                        'blue_fire_arrows': True
+                    }
+                },
+                'owl_warps': {
+                    'vanilla': {
+                        'owl_drops': False
+                    },
+                    'random': {
+                        'owl_drops': True
+                    }
+                },
+                'song_warps': {
+                    'vanilla': {
+                        'warp_songs': False
+                    },
+                    'random': {
+                        'warp_songs': True
+                    }
+                },
+                'beans': {
+                    'vanilla': {
+                        'shuffle_beans': False
+                    },
+                    'shuffled': True
+                },
+                'expensive_merchants': {
+                    'vanilla': {
+                        'shuffle_expensive_merchants': False
+                    },
+                    'shuffled': {
+                        'shuffle_expensive_merchants': True
+                    }
+                },
+                'beans_planted': {
+                    'off': {
+                        'plant_beans': False
+                    },
+                    'on': {
+                        'plant_beans': True
+                    }
+                },
+                'door_of_time': {
+                    'open': {
+                        'open_door_of_time': True
+                    },
+                    'closed': {
+                        'open_door_of_time': False
+                    }
+                },
+                'bombchus_in_logic': {
+                    'off': {
+                        'free_bombchu_drops': False
+                    },
+                    'on': {
+                        'free_bombchu_drops': True
+                    }
+                }
+            }
+        }
