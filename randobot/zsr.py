@@ -223,7 +223,7 @@ class ZSR:
                     }
                 },
                 'keys': {
-                    'default': {
+                    'dungeon': {
                         'shuffle_smallkeys': 'dungeon',
                         'shuffle_bosskeys': 'dungeon'
                     },
