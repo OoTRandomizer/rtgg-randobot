@@ -224,13 +224,14 @@ class RandoHandler(RaceHandler):
                 draft.update({
                     'racers': entrants,
                     'status': 'select_order',
-                    'current_selector': {},
+                    'current_selector': None,
                     'ban_count': 0,
                     'pick_count': 0,
                     'available_settings': self.zsr.load_draft_settings(),
                     'drafted_settings': {
                         'bans': {},
-                        'picks': {}
+                        'picks': {},
+                        'data': {}
                     },
                 })
 
@@ -279,7 +280,7 @@ class RandoHandler(RaceHandler):
         # Compare sender to draft_data 
         if not racer[0].get('name') == reply_to:
             return
-        draft.update({'current_selector': racer[0]})
+        draft.update({'current_selector': racer[0].get('name')})
         await self.send_message(
             f'{reply_to}, please prevent a major setting from changing with !ban <setting>.'
         )
@@ -299,9 +300,9 @@ class RandoHandler(RaceHandler):
         # Compare sender to draft_data 
         if not racer[0].get('name') == reply_to:
             return
-        draft.update({'current_selector': racer[1]})
+        draft.update({'current_selector': racer[1].get('name')})
         await self.send_message(
-            f"{draft.get('current_selector').get('name')}, please prevent a major setting from changing with !ban <setting>."
+            f"{draft.get('current_selector')}, please prevent a major setting from changing with !ban <setting>."
         )
         await self.send_message(
             'Use !settings to view a list of available options.'
@@ -316,33 +317,34 @@ class RandoHandler(RaceHandler):
         reply_to = message.get('user', {}).get('name')
         racer = draft.get('racers')
 
-        if reply_to == draft.get('current_selector').get('name'):
+        if reply_to == draft.get('current_selector'):
             if len(args) == 1 and args[0] in draft.get('available_settings').get('major').keys():
                 settings = draft.get('available_settings').get('major').get(args[0])
                 await self.send_message(
-                    f'{reply_to} has elected to force "{args[0]}" to "{tuple(settings.keys())[0]}".'
+                    f'{args[0]} will be forced to "{list(settings.keys())[0]}".'
                 )
-                draft.get('drafted_settings').get('bans').update(tuple(settings.values())[0])
+                draft.get('drafted_settings').get('bans').update({args[0]: list(settings.keys())[0]})
+                draft.get('drafted_settings').get('data').update(list(settings.values())[0])
                 draft.get('available_settings').get('major').pop(args[0])
                 draft['ban_count'] += 1
                 if reply_to == racer[0].get('name'):
-                    draft.update({'current_selector': racer[1]})
+                    draft.update({'current_selector': racer[1].get('name')})
                 elif reply_to == racer[1].get('name'):
-                    draft.update({'current_selector': racer[0]})
+                    draft.update({'current_selector': racer[0].get('name')})
                 if draft.get('ban_count') == 2:
                     draft.update({'status': 'major_pick'})
                     await self.send_message(
                             'All bans have been recorded.'
                         ),
                     await self.send_message(
-                            f"{draft.get('current_selector').get('name')}, please modify a major setting with !pick <setting> <value>."
+                            f"{draft.get('current_selector')}, please modify a major setting with !pick <setting> <value>."
                         )
                     await self.send_message(
                         'Use !settings to view a list of available options.'
                     )
                     return
                 await self.send_message(
-                    f"{draft.get('current_selector').get('name')}, please prevent a major setting from changing with !ban <setting>."
+                    f"{draft.get('current_selector')}, please prevent a major setting from changing with !ban <setting>."
                 )
                 await self.send_message(
                     'Use !settings to view a list of available options.'
@@ -361,7 +363,7 @@ class RandoHandler(RaceHandler):
         reply_to = message.get('user', {}).get('name')
         racer = draft.get('racers')
 
-        if reply_to == draft.get('current_selector').get('name'):
+        if reply_to == draft.get('current_selector'):
             if draft.get('status') == 'major_pick':
                 if len(args) == 2 and args[0] in draft.get('available_settings').get('minor').keys():
                     await self.send_message(
@@ -374,7 +376,8 @@ class RandoHandler(RaceHandler):
                     await self.send_message(
                         f'{reply_to} has elected to set "{args[0]}" to "{args[1]}".'
                     )
-                    draft.get('drafted_settings').get('picks').update({
+                    draft.get('drafted_settings').get('picks').update({args[0]: args[1]})
+                    draft.get('drafted_settings').get('data').update({
                         setting for setting in settings.get(args[1]).items()
                     })
                     draft.get('available_settings').get('major').pop(args[0])
@@ -382,28 +385,28 @@ class RandoHandler(RaceHandler):
                     if draft.get('pick_count') == 2:
                         draft.update({
                             'status': 'minor_pick',
-                            'current_selector': racer[1]
+                            'current_selector': racer[1].get('name')
                         })
                         await self.send_message(
-                            f"{draft.get('current_selector').get('name')}, please modify a minor setting with !pick <setting> <value>."
+                            f"{draft.get('current_selector')}, please modify a minor setting with !pick <setting> <value>."
                         )
                         await self.send_message(
                             'Use !settings to view a list of available options.'
                         )
                         return
                     if reply_to == racer[0].get('name'):
-                        draft.update({'current_selector': racer[1]})
+                        draft.update({'current_selector': racer[1].get('name')})
                     elif reply_to == racer[1].get('name'):
-                        draft.update({'current_selector': racer[0]})
+                        draft.update({'current_selector': racer[0].get('name')})
                     await self.send_message(
-                        f"{draft.get('current_selector').get('name')}, please modify a major setting with !pick <setting> <value>."
+                        f"{draft.get('current_selector')}, please modify a major setting with !pick <setting> <value>."
                     )
                     await self.send_message(
                         'Use !settings to view a list of available options.'
                     )
                     return
                 await self.send_message(
-                    f'Sorry, I don\'t understand. Please try again.'
+                    f'Invalid option. Use !settings to view available options.'
                 )
             elif draft.get('status') == 'minor_pick':
                 if len(args) == 2 and args[0] in draft.get('available_settings').get('major').keys():
@@ -415,20 +418,21 @@ class RandoHandler(RaceHandler):
                 and args[1] in draft.get('available_settings').get('minor').get(args[0]).keys():
                     settings = draft.get('available_settings').get('minor').get(args[0])
                     await self.send_message(
-                        f'{reply_to} has elected to set "{args[0]}" to "{args[1]}".'
+                        f'{args[0]} will be set to "{args[1]}".'
                     )
-                    draft.get('drafted_settings').get('picks').update({
+                    draft.get('drafted_settings').get('picks').update({args[0]: args[1]})
+                    draft.get('drafted_settings').get('data').update({
                         setting for setting in settings.get(args[1]).items()
                     })
                     draft.get('available_settings').get('minor').pop(args[0])
                     draft['pick_count'] += 1
                     if draft.get('pick_count') == 4:
-                        draft.update({'status': 'complete'})
+                        draft.update({
+                            'status': 'complete',
+                            'current_selector': None
+                        })
                         await self.send_message(
                             'All picks have been recorded.'
-                        )
-                        await self.send_message(
-                            'Draft process has been completed.'
                         )
                         await self.send_message(
                             'Race monitors may roll a seed with the drafted settings using !roll. '
@@ -436,23 +440,23 @@ class RandoHandler(RaceHandler):
                         )
                         return
                     if reply_to == racer[0].get('name'):
-                        draft.update({'current_selector': racer[1]})
+                        draft.update({'current_selector': racer[1].get('name')})
                     elif reply_to == racer[1].get('name'):
-                        draft.update({'current_selector': racer[0]})
+                        draft.update({'current_selector': racer[0].get('name')})
                     await self.send_message(
-                        f"{draft.get('current_selector').get('name')}, please modify a minor setting with !pick <setting> <value>."
+                        f"{draft.get('current_selector')}, please modify a minor setting with !pick <setting> <value>."
                     )
                     await self.send_message(
                         'Use !settings to view a list of available options.'
                     )
                     return
                 await self.send_message(
-                    f'Sorry, I don\'t understand. Please try again.'
+                    f'Invalid pool. Use !settings to view available options.'
                 )
 
     async def ex_settings(self, args, message):
         draft = self.state.get('draft_data')
-        if self._race_in_progress() or not draft.get('status') in ['major_ban', 'major_pick', 'minor_pick']:
+        if self._race_in_progress() or not draft.get('status') in ['major_ban', 'major_pick', 'minor_pick', 'complete']:
             return
         if draft.get('status') in ['major_ban', 'major_pick']:
             if len(args) == 0:
@@ -473,7 +477,7 @@ class RandoHandler(RaceHandler):
                 setting = draft.get('available_settings').get('major').get(args[0])
                 if draft.get('status') == 'major_ban':
                     await self.send_message(
-                        f'The default value for "{args[0]}" is "{tuple(setting.keys())[0]}".'
+                        f'The default value for "{args[0]}" is "{list(setting.keys())[0]}".'
                     )
                     return
                 await self.send_message(

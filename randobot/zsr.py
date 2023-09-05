@@ -375,7 +375,9 @@ class ZSR:
                     'vanilla': {
                         'shuffle_beans': False
                     },
-                    'shuffled': True
+                    'shuffled': {
+                        'shuffle_beans': True
+                    }
                 },
                 'expensive_merchants': {
                     'vanilla': {
