@@ -172,6 +172,7 @@ class RandoHandler(RaceHandler):
             await self.unpin_message(self.state['pinned_msg'])
             del self.state['pinned_msg']
 
+    @monitor_cmd
     async def ex_s7(self, args, message):
         """
         Handle !s7 commands.
@@ -251,14 +252,18 @@ class RandoHandler(RaceHandler):
             
             elif args[0] == 'cancel':
                 if draft.get('enabled'):
-                    if draft.get('race_type') == 'tournament' and not draft.get('status') == 'complete':
+                    if draft.get('race_type') == 'tournament':
+                        if draft.get('status') == 'complete' and not can_moderate(message):
+                            await self.send_message(
+                                'Draft process has already been completed. Please contact an organizer to cancel this race.'
+                            )
+                            return
                         await self.ex_fpa(['off'], message),
-                        await self.send_message('Draft Mode has been disabled.')
-                        draft.clear()
-                        return
                     await self.send_message(
-                        'Draft process has already been completed. Please contact an organizer to cancel this race.'
+                        'Draft Mode has been disabled.'
                     )
+                    draft.clear()
+                    return
                 await self.send_message(
                     'Draft Mode is not currently enabled.'
                 )
@@ -274,7 +279,7 @@ class RandoHandler(RaceHandler):
         # Compare sender to draft_data 
         if not racer[0].get('name') == reply_to:
             return
-        draft.get('current_selector').update(racer[0])
+        draft.update({'current_selector': racer[0]})
         await self.send_message(
             f'{reply_to}, please prevent a major setting from changing with !ban <setting>.'
         )
@@ -294,7 +299,7 @@ class RandoHandler(RaceHandler):
         # Compare sender to draft_data 
         if not racer[0].get('name') == reply_to:
             return
-        draft.get('current_selector').update(racer[1])
+        draft.update({'current_selector': racer[1]})
         await self.send_message(
             f"{draft.get('current_selector').get('name')}, please prevent a major setting from changing with !ban <setting>."
         )
@@ -321,9 +326,9 @@ class RandoHandler(RaceHandler):
                 draft.get('available_settings').get('major').pop(args[0])
                 draft['ban_count'] += 1
                 if reply_to == racer[0].get('name'):
-                    draft.get('current_selector').update(racer[1])
+                    draft.update({'current_selector': racer[1]})
                 elif reply_to == racer[1].get('name'):
-                    draft.get('current_selector').update(racer[0])
+                    draft.update({'current_selector': racer[0]})
                 if draft.get('ban_count') == 2:
                     draft.update({'status': 'major_pick'})
                     await self.send_message(
@@ -380,9 +385,9 @@ class RandoHandler(RaceHandler):
                         )
                         return
                     if reply_to == racer[0].get('name'):
-                        draft.get('current_selector').update(racer[1])
+                        draft.update({'current_selector': racer[1]})
                     elif reply_to == racer[1].get('name'):
-                        draft.get('current_selector').update(racer[0])
+                        draft.update({'current_selector': racer[0]})
                     await self.send_message(
                         f"{draft.get('current_selector').get('name')}, please modify a major setting with !pick <setting> <value>."
                     )
@@ -411,7 +416,10 @@ class RandoHandler(RaceHandler):
                     if draft.get('pick_count') == 4:
                         draft.update({'status': 'complete'})
                         await self.send_message(
-                            'All picks have been recorded. Draft process has been completed.'
+                            'All picks have been recorded.'
+                        )
+                        await self.send_message(
+                            'Draft process has been completed.'
                         )
                         await self.send_message(
                             'Race monitors may roll a seed with the drafted settings using !roll. '
@@ -420,9 +428,9 @@ class RandoHandler(RaceHandler):
                         print(draft)
                         return
                     if reply_to == racer[0].get('name'):
-                        draft.get('current_selector').update(racer[1])
+                        draft.update({'current_selector': racer[1]})
                     elif reply_to == racer[1].get('name'):
-                        draft.get('current_selector').update(racer[0])
+                        draft.update({'current_selector': racer[0]})
                     await self.send_message(
                         f"{draft.get('current_selector').get('name')}, please modify a minor setting with !pick <setting> <value>."
                     )
