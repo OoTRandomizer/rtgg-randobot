@@ -434,7 +434,6 @@ class RandoHandler(RaceHandler):
                             'Race monitors may roll a seed with the drafted settings using !roll. '
                             'Use !settings to view what was selected.'
                         )
-                        print(draft)
                         return
                     if reply_to == racer[0].get('name'):
                         draft.update({'current_selector': racer[1]})
