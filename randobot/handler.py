@@ -352,7 +352,12 @@ class RandoHandler(RaceHandler):
         draft = self.state.get('draft_data')
         if self._race_in_progress() or not draft.get('enabled') or not draft.get('status') in ['major_pick', 'minor_pick']:
             return
-        
+        elif len(args) < 2:
+            await self.send_message(
+                'Invalid format. Please use !pick <setting> <value>.'
+            )
+            return
+
         reply_to = message.get('user', {}).get('name')
         racer = draft.get('racers')
 
@@ -369,7 +374,9 @@ class RandoHandler(RaceHandler):
                     await self.send_message(
                         f'{reply_to} has elected to set "{args[0]}" to "{args[1]}".'
                     )
-                    # draft.get('drafted_settings').get('picks').update(tuple(setting.values())[0])
+                    draft.get('drafted_settings').get('picks').update({
+                        setting for setting in settings.get(args[1]).items()
+                    })
                     draft.get('available_settings').get('major').pop(args[0])
                     draft['pick_count'] += 1
                     if draft.get('pick_count') == 2:
@@ -396,7 +403,7 @@ class RandoHandler(RaceHandler):
                     )
                     return
                 await self.send_message(
-                    f'Sorry, I don\'t understand. Please use try again.'
+                    f'Sorry, I don\'t understand. Please try again.'
                 )
             elif draft.get('status') == 'minor_pick':
                 if len(args) == 2 and args[0] in draft.get('available_settings').get('major').keys():
@@ -406,11 +413,13 @@ class RandoHandler(RaceHandler):
                     return
                 elif len(args) == 2 and args[0] in draft.get('available_settings').get('minor').keys() \
                 and args[1] in draft.get('available_settings').get('minor').get(args[0]).keys():
-                    setting = draft.get('available_settings').get('minor').get(args[0])
+                    settings = draft.get('available_settings').get('minor').get(args[0])
                     await self.send_message(
                         f'{reply_to} has elected to set "{args[0]}" to "{args[1]}".'
                     )
-                    # draft.get('drafted_settings').get('picks').update(tuple(setting.values())[0])
+                    draft.get('drafted_settings').get('picks').update({
+                        setting for setting in settings.get(args[1]).items()
+                    })
                     draft.get('available_settings').get('minor').pop(args[0])
                     draft['pick_count'] += 1
                     if draft.get('pick_count') == 4:
