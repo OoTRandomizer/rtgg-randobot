@@ -101,7 +101,7 @@ class ZSR:
             return latest_dev_version, True
         return latest_dev_version, False
 
-    def roll_seed(self, preset, encrypt, dev):
+    def roll_seed(self, preset, encrypt, dev, settings=None):
         """
         Generate a seed and return its public URL.
         """
@@ -109,9 +109,18 @@ class ZSR:
             latest_dev_version, changed = self.get_latest_dev_version()
             if changed:
                 self.presets_dev = self.load_presets_dev()
-            req_body = json.dumps(self.presets_dev[preset]['settings'])
+            if preset is not None:
+                req_body = json.dumps(self.presets_dev[preset]['settings'])
+            else:
+                self.presets_dev.get('s6').get('settings').update(settings)
+                req_body = json.dumps(self.presets_dev.get('s6').get('settings'))
         else:
-            req_body = json.dumps(self.presets[preset]['settings'])
+            if preset is not None:
+                req_body = json.dumps(self.presets[preset]['settings'])
+            else:
+                self.presets_dev.get('s6').get('settings').update(settings)
+                req_body = json.dumps(self.presets_dev.get('s6').get('settings'))
+
         params = {
             'key': self.ootr_api_key,
         }
@@ -150,7 +159,7 @@ class ZSR:
         placement = requests.get(self.qualifier_placement_endpoint).json()
         return placement
     
-    def load_draft_settings(self):
+    def load_available_settings(self):
         return {
             'major': {
                 'bridge': {

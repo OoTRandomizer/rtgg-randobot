@@ -227,14 +227,13 @@ class RandoHandler(RaceHandler):
                     'current_selector': None,
                     'ban_count': 0,
                     'pick_count': 0,
-                    'available_settings': self.zsr.load_draft_settings(),
+                    'available_settings': self.zsr.load_available_settings(),
                     'drafted_settings': {
                         'bans': {},
                         'picks': {},
                         'data': {}
                     },
                 })
-
             elif args[0] == 'qualifier' and not draft.get('enabled'):
                 if not can_moderate(message):
                     return
@@ -250,7 +249,6 @@ class RandoHandler(RaceHandler):
                 await self.send_message(
                     'Draft Mode is already enabled.'
                 )
-            
             elif args[0] == 'cancel':
                 if draft.get('enabled'):
                     if draft.get('race_type') == 'tournament':
@@ -435,8 +433,7 @@ class RandoHandler(RaceHandler):
                             'All picks have been recorded.'
                         )
                         await self.send_message(
-                            'Race monitors may roll a seed with the drafted settings using !roll. '
-                            'Use !settings to view what was selected.'
+                            'Race monitors use !seed 15 minutes prior to race start to roll the seed. '
                         )
                         return
                     if reply_to == racer[0].get('name'):
@@ -456,6 +453,7 @@ class RandoHandler(RaceHandler):
 
     async def ex_settings(self, args, message):
         draft = self.state.get('draft_data')
+
         if self._race_in_progress() or not draft.get('status') in ['major_ban', 'major_pick', 'minor_pick', 'complete']:
             return
         if draft.get('status') in ['major_ban', 'major_pick']:
@@ -539,11 +537,6 @@ class RandoHandler(RaceHandler):
         Handle !seed commands.
         """
         if self._race_in_progress():
-            return
-        elif self.state.get('draft_data').get('enabled'):
-            await self.send_message(
-                'Sorry, this command is disabled for Draft Mode.'
-            )
             return
         await self.roll_and_send(args, message, encrypt=True, dev=False)
 
@@ -654,7 +647,20 @@ class RandoHandler(RaceHandler):
                 'Don\'t get greedy!'
             )
             return
-
+        if self.state.get('draft_data').get('enabled'):
+            if not self.state.get('draft_data').get('status') == 'complete':
+                await self.send_message(
+                    f'Sorry {reply_to}, you must finish drafting settings before rolling the seed.'
+                )
+                return
+            await self.roll(
+                preset=None,
+                encrypt=encrypt,
+                dev=True,
+                reply_to=reply_to,
+                settings=self.state.get('draft_data').get('drafted_settings').get('data')
+            )
+            return 
         await self.roll(
             preset=args[0] if args else 'weekly',
             encrypt=encrypt,
@@ -662,20 +668,21 @@ class RandoHandler(RaceHandler):
             reply_to=reply_to,
         )
 
-    async def roll(self, preset, encrypt, dev, reply_to):
+    async def roll(self, preset, encrypt, dev, reply_to, settings):
         """
         Generate a seed and send it to the race room.
         """
-        if (dev and preset not in self.zsr.presets_dev) or (not dev and preset not in self.zsr.presets):
-            res_cmd = '!presetsdev' if dev else '!presets'
-            await self.send_message(
-                'Sorry %(reply_to)s, I don\'t recognise that preset. Use '
-                '%(res_cmd)s to see what is available.'
-                % {'res_cmd': res_cmd, 'reply_to': reply_to or 'friend'}
-            )
-            return
+        if not self.state.get('draft_data').get('enabled'):
+            if (dev and preset not in self.zsr.presets_dev) or (not dev and preset not in self.zsr.presets):
+                res_cmd = '!presetsdev' if dev else '!presets'
+                await self.send_message(
+                    'Sorry %(reply_to)s, I don\'t recognise that preset. Use '
+                    '%(res_cmd)s to see what is available.'
+                    % {'res_cmd': res_cmd, 'reply_to': reply_to or 'friend'}
+                )
+                return
 
-        seed_id, seed_uri = self.zsr.roll_seed(preset, encrypt, dev)
+        seed_id, seed_uri = self.zsr.roll_seed(preset, encrypt, dev, settings)
 
         await self.send_message(
             '%(reply_to)s, here is your seed: %(seed_uri)s'
