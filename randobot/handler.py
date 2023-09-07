@@ -668,7 +668,7 @@ class RandoHandler(RaceHandler):
             reply_to=reply_to,
         )
 
-    async def roll(self, preset, encrypt, dev, reply_to, settings):
+    async def roll(self, preset, encrypt, dev, reply_to, settings=None):
         """
         Generate a seed and send it to the race room.
         """

@@ -101,7 +101,7 @@ class ZSR:
             return latest_dev_version, True
         return latest_dev_version, False
 
-    def roll_seed(self, preset, encrypt, dev, settings=None):
+    def roll_seed(self, preset, encrypt, dev, settings):
         """
         Generate a seed and return its public URL.
         """
