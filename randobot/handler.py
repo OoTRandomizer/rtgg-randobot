@@ -142,8 +142,8 @@ class RandoHandler(RaceHandler):
             # Only allow Draft Mode for S7 races.
             if self._is_s7_race():
                 await self.send_message(
-                    'If this is a draft race, use !s7 tournament for official matches or '
-                    '!s7 practice for practice races.'
+                    'If this is a draft race, use !s7 tournament for official matches, '
+                    'otherwise use !s7 practice.'
                 )
                 self.state.setdefault('draft_data', {})
             self.state['intro_sent'] = True
@@ -350,7 +350,7 @@ class RandoHandler(RaceHandler):
             elif len(args) == 1 and args[0] in draft.get('available_settings').get('major').keys():
                 settings = draft.get('available_settings').get('major').get(args[0])
                 await self.send_message(
-                    f'{args[0]} will be forced to "{list(settings.keys())[0]}".'
+                    f'{args[0].capitalize()} will be forced to: {list(settings.keys())[0].capitalize()}'
                 )
                 # Move setting keyword from available pool to picks pool. Add literal setting to data pool.
                 draft.get('drafted_settings').get('bans').update({args[0]: list(settings.keys())[0]})
@@ -418,7 +418,7 @@ class RandoHandler(RaceHandler):
                 and args[1] in draft.get('available_settings').get('major').get(args[0]).keys():
                     settings = draft.get('available_settings').get('major').get(args[0])
                     await self.send_message(
-                        f'"{args[0]}" will be set to "{args[1]}".'
+                        f'{args[0].capitalize()} will be set to: {args[1].capitalize()}'
                     )
                     # Move setting keyword from available pool to picks pool. Add literal setting to data pool.
                     draft.get('drafted_settings').get('picks').update({args[0]: args[1]})
@@ -467,7 +467,7 @@ class RandoHandler(RaceHandler):
                 and args[1] in draft.get('available_settings').get('minor').get(args[0]).keys():
                     settings = draft.get('available_settings').get('minor').get(args[0])
                     await self.send_message(
-                        f'{args[0]} will be set to "{args[1]}".'
+                        f'{args[0].capitalize()} will be set to: {args[1].capitalize()}'
                     )
                     # Move setting keyword from available pool to picks pool. Add literal setting to data pool.
                     draft.get('drafted_settings').get('picks').update({args[0]: args[1]})
@@ -525,22 +525,22 @@ class RandoHandler(RaceHandler):
                 )
                 if draft.get('status') == 'major_ban':
                     await self.send_message(
-                        'Use !settings <setting> to view its default value.'
+                        'Use !settings <setting> to view the default value.'
                     )
                     return
                 await self.send_message(
-                    'Use !settings <setting> to view its available values.'
+                    'Use !settings <setting> to view available values.'
                 )
             # List available values for specific setting
             elif len(args) == 1 and args[0] in draft.get('available_settings').get('major').keys():
                 setting = draft.get('available_settings').get('major').get(args[0])
                 if draft.get('status') == 'major_ban':
                     await self.send_message(
-                        f'The default value for "{args[0]}" is "{list(setting.keys())[0]}".'
+                        f'Default value for {args[0].capitalize()}: {list(setting.keys())[0].capitalize()}'
                     )
                     return
                 await self.send_message(
-                    f'Available values for "{args[0]}": {", ".join(value for value in setting.keys())}'
+                    f'Available values for {args[0].capitalize()}: {", ".join(value for value in setting.keys())}'
                 )
         elif draft.get('status') == 'minor_pick':
             # List available settings to select from
@@ -550,13 +550,13 @@ class RandoHandler(RaceHandler):
                     f"{' | '.join(draft.get('available_settings').get('minor').keys())}"
                 )
                 await self.send_message(
-                    'Use !settings <setting> to view its available values.'
+                    'Use !settings <setting> to view available values.'
                 )
             # List available values for specific setting
             elif len(args) == 1 and args[0] in draft.get('available_settings').get('minor').keys():
                 setting = draft.get('available_settings').get('minor').get(args[0])
                 await self.send_message(
-                    f'Available values for "{args[0]}": {", ".join(value for value in setting.keys())}'
+                    f'Available values for {args[0].capitalize()}: {", ".join(value for value in setting.keys())}'
                 )
 
     @monitor_cmd
