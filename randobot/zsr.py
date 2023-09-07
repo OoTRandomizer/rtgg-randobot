@@ -109,14 +109,18 @@ class ZSR:
             latest_dev_version, changed = self.get_latest_dev_version()
             if changed:
                 self.presets_dev = self.load_presets_dev()
+            # Roll with provided preset for non-draft races.
             if preset is not None:
                 req_body = json.dumps(self.presets_dev[preset]['settings'])
+            # Fetch tournament preset and patch with drafted settings.
             else:
                 self.presets_dev.get('s6').get('settings').update(settings)
                 req_body = json.dumps(self.presets_dev.get('s6').get('settings'))
         else:
+            # Roll with provided preset for non-draft races.
             if preset is not None:
                 req_body = json.dumps(self.presets[preset]['settings'])
+            # Fetch tournament preset and patch with drafted settings.
             else:
                 self.presets_dev.get('s6').get('settings').update(settings)
                 req_body = json.dumps(self.presets_dev.get('s6').get('settings'))
@@ -156,10 +160,16 @@ class ZSR:
         )
     
     def load_qualifier_placements(self):
+        """
+        Returns qualifier placement data for Tournament matches.
+        """
         placement = requests.get(self.qualifier_placement_endpoint).json()
         return placement
     
     def load_available_settings(self):
+        """
+        Hard-coded settings pool for Draft Mode.
+        """
         return {
             'major': {
                 'bridge': {

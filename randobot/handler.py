@@ -139,6 +139,7 @@ class RandoHandler(RaceHandler):
                 ],
                 pinned=True,
             )
+            # Only allow Draft Mode for S7 races.
             if self._is_s7_race():
                 await self.send_message(
                     'If this is a draft race, use !s7 tournament for official matches or '
@@ -181,6 +182,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress() or not self._is_s7_race():
             return
+        # Requires more than one user to enable Draft Mode.
         elif self._is_s7_race and self.data.get('entrants_count') < 2:
             await self.send_message(
                 'At least two runners must be present before enabling Draft Mode.'
@@ -189,11 +191,13 @@ class RandoHandler(RaceHandler):
         
         draft = self.state.get('draft_data')
 
+        # Handle valid arguments.
         if len(args) == 1 and args[0] in ('tournament', 'practice', 'qualifier', 'cancel'):
             if args[0] in ('tournament', 'practice') and not draft.get('enabled'):
-                if args[0] == 'tournament' and self.data.get('entrants_count') > 2:
+                # Only allow tournament argument for tournament matches.
+                if args[0] == 'tournament' and 'Tournament' not in self.data.get('info_user'):
                     await self.send_message(
-                        'Tournament Draft Mode is only available for head-to-head matches. Please use !s7 practice instead.'
+                        'Tournament Draft Mode is only available for official matches. Use !s7 practice instead.'
                     )
                     return
                 draft.update({
@@ -202,17 +206,18 @@ class RandoHandler(RaceHandler):
                     })
                 await self.send_message(
                     'Welcome to OoTR Draft Mode! '
-                    'You can disable Draft Mode at any time with !s7 cancel.'
+                    'You can disable Draft Mode with !s7 cancel.'
                 ),
                 await self.send_message(
-                    f'You have indicated that this is a {args[0]} race.'
+                    f'This is a {args[0]} race.'
                 )
+                # Always enable FPA for official matches.
                 if draft.get('race_type') == 'tournament':
                     await self.ex_fpa(['on'], message),
                 
                 entrants = await self.determine_higher_seed()
 
-                # If we can't verify qualification data, disable Draft Mode
+                # If we can't seed players, exit Draft Mode.
                 if len(entrants) < 2:
                     await self.send_message(
                             'Error fetching racer data. Exiting Draft Mode...'
@@ -235,6 +240,7 @@ class RandoHandler(RaceHandler):
                     },
                 })
             elif args[0] == 'qualifier' and not draft.get('enabled'):
+                # Restrict qualifier argument to Race Moderators.
                 if not can_moderate(message):
                     return
                 draft.update({
@@ -242,9 +248,12 @@ class RandoHandler(RaceHandler):
                     'race_type': args[0]
                     })
                 await self.send_message(
-                    f"You have indicated that this is a {args[0]} race. Race monitors, use !roll 15 minutes prior to race start for a seed."
+                    'Welcome to OoTR Draft Mode! '
+                    'You can disable Draft Mode with !s7 cancel.'
+                ),
+                await self.send_message(
+                    f"This is a {args[0]} race. Race monitors, use !seed 15 minutes prior to race start for a seed."
                 )
-            
             elif args[0] in ('tournament', 'practice', 'qualifier') and draft.get('enabled'):
                 await self.send_message(
                     'Draft Mode is already enabled.'
@@ -252,9 +261,10 @@ class RandoHandler(RaceHandler):
             elif args[0] == 'cancel':
                 if draft.get('enabled'):
                     if draft.get('race_type') == 'tournament':
+                        # Only allow Race Moderators to cancel once drafting is complete.
                         if draft.get('status') == 'complete' and not can_moderate(message):
                             await self.send_message(
-                                'Draft process has already been completed. Please contact an organizer to cancel this race.'
+                                'Draft process has already been completed. Please contact an organizer for assistance.'
                             )
                             return
                         await self.ex_fpa(['off'], message),
@@ -268,6 +278,11 @@ class RandoHandler(RaceHandler):
                 )
 
     async def ex_first(self, args, message):
+        """
+        Handle !first commands.
+
+        Allow higher-seeded player to pick first.
+        """
         draft = self.state.get('draft_data')
         if self._race_in_progress() or not draft.get('status') == 'select_order':
             return
@@ -280,14 +295,19 @@ class RandoHandler(RaceHandler):
             return
         draft.update({'current_selector': racer[0].get('name')})
         await self.send_message(
-            f'{reply_to}, please prevent a major setting from changing with !ban <setting>.'
+            f'{reply_to}, remove a setting with !ban <setting>.'
         )
         await self.send_message(
-            'Use !settings to view a list of available options.'
+            'Use !settings for available options.'
         )
         draft.update({'status': 'major_ban'})
 
     async def ex_second(self, args, message):
+        """
+        Handle !second commands.
+
+        Allow higher-seeded player to pick second.
+        """
         draft = self.state.get('draft_data')
         if self._race_in_progress() or not draft.get('status') == 'select_order':
             return
@@ -300,14 +320,19 @@ class RandoHandler(RaceHandler):
             return
         draft.update({'current_selector': racer[1].get('name')})
         await self.send_message(
-            f"{draft.get('current_selector')}, please prevent a major setting from changing with !ban <setting>."
+            f"{draft.get('current_selector')}, remove a setting with !ban <setting>."
         )
         await self.send_message(
-            'Use !settings to view a list of available options.'
+            'Use !settings for available options.'
         )
         draft.update({'status': 'major_ban'})
             
     async def ex_ban(self, args, message):
+        """
+        Handles !ban commands.
+
+        Force setting to default value.
+        """
         draft = self.state.get('draft_data')
         if self._race_in_progress() or draft.get('status') != 'major_ban':
             return
@@ -316,45 +341,65 @@ class RandoHandler(RaceHandler):
         racer = draft.get('racers')
 
         if reply_to == draft.get('current_selector'):
-            if len(args) == 1 and args[0] in draft.get('available_settings').get('major').keys():
+            # Handle setting from different pool.
+            if len(args) == 1 and args[0] in draft.get('available_settings').get('minor').keys():
+                    await self.send_message(
+                        'Invalid pool. Use !settings for available options.'
+                    )
+                    return
+            elif len(args) == 1 and args[0] in draft.get('available_settings').get('major').keys():
                 settings = draft.get('available_settings').get('major').get(args[0])
                 await self.send_message(
                     f'{args[0]} will be forced to "{list(settings.keys())[0]}".'
                 )
+                # Move setting keyword from available pool to picks pool. Add literal setting to data pool.
                 draft.get('drafted_settings').get('bans').update({args[0]: list(settings.keys())[0]})
                 draft.get('drafted_settings').get('data').update(list(settings.values())[0])
                 draft.get('available_settings').get('major').pop(args[0])
+                # Advance draft state.
                 draft['ban_count'] += 1
+                # Change player turn post setting selection.
                 if reply_to == racer[0].get('name'):
                     draft.update({'current_selector': racer[1].get('name')})
                 elif reply_to == racer[1].get('name'):
                     draft.update({'current_selector': racer[0].get('name')})
+                # Move to pick phase once each player has banned.
                 if draft.get('ban_count') == 2:
                     draft.update({'status': 'major_pick'})
                     await self.send_message(
                             'All bans have been recorded.'
                         ),
                     await self.send_message(
-                            f"{draft.get('current_selector')}, please modify a major setting with !pick <setting> <value>."
+                            f"{draft.get('current_selector')}, modify a major setting with !pick <setting> <value>."
                         )
                     await self.send_message(
-                        'Use !settings to view a list of available options.'
+                        'Use !settings for of available options.'
                     )
                     return
                 await self.send_message(
-                    f"{draft.get('current_selector')}, please prevent a major setting from changing with !ban <setting>."
+                    f"{draft.get('current_selector')}, remove a setting with !ban <setting>."
                 )
                 await self.send_message(
-                    'Use !settings to view a list of available options.'
+                    'Use !settings for available options.'
                 )
+                return
+            # Handle invalid format and unknown arguments
+            await self.send_message(
+                f'Invalid option. Use !settings for available options.'
+            )
 
     async def ex_pick(self, args, message):
+        """
+        Handles !pick commands.
+
+        Change setting to specified value.
+        """
         draft = self.state.get('draft_data')
         if self._race_in_progress() or not draft.get('enabled') or not draft.get('status') in ['major_pick', 'minor_pick']:
             return
         elif len(args) < 2:
             await self.send_message(
-                'Invalid format. Please use !pick <setting> <value>.'
+                'Invalid format. Use !pick <setting> <value>.'
             )
             return
 
@@ -363,22 +408,25 @@ class RandoHandler(RaceHandler):
 
         if reply_to == draft.get('current_selector'):
             if draft.get('status') == 'major_pick':
+                # Handle setting from different pool
                 if len(args) == 2 and args[0] in draft.get('available_settings').get('minor').keys():
                     await self.send_message(
-                        'Invalid pool. Use !settings to view available options.'
+                        'Invalid pool. Use !settings for available options.'
                     )
                     return
                 elif len(args) == 2 and args[0] in draft.get('available_settings').get('major').keys() \
                 and args[1] in draft.get('available_settings').get('major').get(args[0]).keys():
                     settings = draft.get('available_settings').get('major').get(args[0])
                     await self.send_message(
-                        f'{reply_to} has elected to set "{args[0]}" to "{args[1]}".'
+                        f'"{args[0]}" will be set to "{args[1]}".'
                     )
+                    # Move setting keyword from available pool to picks pool. Add literal setting to data pool.
                     draft.get('drafted_settings').get('picks').update({args[0]: args[1]})
                     draft.get('drafted_settings').get('data').update({
                         setting for setting in settings.get(args[1]).items()
                     })
                     draft.get('available_settings').get('major').pop(args[0])
+                    # Advance draft state. Maintain ABABBA pick order.
                     draft['pick_count'] += 1
                     if draft.get('pick_count') == 2:
                         draft.update({
@@ -386,30 +434,33 @@ class RandoHandler(RaceHandler):
                             'current_selector': racer[1].get('name')
                         })
                         await self.send_message(
-                            f"{draft.get('current_selector')}, please modify a minor setting with !pick <setting> <value>."
+                            f"{draft.get('current_selector')}, modify a minor setting with !pick <setting> <value>."
                         )
                         await self.send_message(
-                            'Use !settings to view a list of available options.'
+                            'Use !settings for available options.'
                         )
                         return
+                    # Change player turn post setting selection.
                     if reply_to == racer[0].get('name'):
                         draft.update({'current_selector': racer[1].get('name')})
                     elif reply_to == racer[1].get('name'):
                         draft.update({'current_selector': racer[0].get('name')})
                     await self.send_message(
-                        f"{draft.get('current_selector')}, please modify a major setting with !pick <setting> <value>."
+                        f"{draft.get('current_selector')}, modify a major setting with !pick <setting> <value>."
                     )
                     await self.send_message(
-                        'Use !settings to view a list of available options.'
+                        'Use !settings for available options.'
                     )
                     return
+                # Handle invalid format and unknown arguments
                 await self.send_message(
-                    f'Invalid option. Use !settings to view available options.'
+                    f'Invalid option. Use !settings for available options.'
                 )
             elif draft.get('status') == 'minor_pick':
+                # Handle selecting setting from different pool.
                 if len(args) == 2 and args[0] in draft.get('available_settings').get('major').keys():
                     await self.send_message(
-                        'Invalid pool. Use !settings to view available options.'
+                        'Invalid pool. Use !settings for available options.'
                     )
                     return
                 elif len(args) == 2 and args[0] in draft.get('available_settings').get('minor').keys() \
@@ -418,11 +469,13 @@ class RandoHandler(RaceHandler):
                     await self.send_message(
                         f'{args[0]} will be set to "{args[1]}".'
                     )
+                    # Move setting keyword from available pool to picks pool. Add literal setting to data pool.
                     draft.get('drafted_settings').get('picks').update({args[0]: args[1]})
                     draft.get('drafted_settings').get('data').update({
                         setting for setting in settings.get(args[1]).items()
                     })
                     draft.get('available_settings').get('minor').pop(args[0])
+                    # Advance draft state. Update status after final pick.
                     draft['pick_count'] += 1
                     if draft.get('pick_count') == 4:
                         draft.update({
@@ -433,30 +486,38 @@ class RandoHandler(RaceHandler):
                             'All picks have been recorded.'
                         )
                         await self.send_message(
-                            'Race monitors use !seed 15 minutes prior to race start to roll the seed. '
+                            'Race monitors, use !seed 15 minutes prior to race start to roll the seed.'
                         )
                         return
+                    # Change player turn post setting selection.
                     if reply_to == racer[0].get('name'):
                         draft.update({'current_selector': racer[1].get('name')})
                     elif reply_to == racer[1].get('name'):
                         draft.update({'current_selector': racer[0].get('name')})
                     await self.send_message(
-                        f"{draft.get('current_selector')}, please modify a minor setting with !pick <setting> <value>."
+                        f"{draft.get('current_selector')}, modify a minor setting with !pick <setting> <value>."
                     )
                     await self.send_message(
-                        'Use !settings to view a list of available options.'
+                        'Use !settings to for available options.'
                     )
                     return
+                # Handle invalid format and unknown arguments.
                 await self.send_message(
-                    f'Invalid pool. Use !settings to view available options.'
+                    f'Invalid pool. Use !settings for available options.'
                 )
 
     async def ex_settings(self, args, message):
+        """
+        Handle !settings commands.
+
+        List available settings and values.
+        """
         draft = self.state.get('draft_data')
 
         if self._race_in_progress() or not draft.get('status') in ['major_ban', 'major_pick', 'minor_pick', 'complete']:
             return
         if draft.get('status') in ['major_ban', 'major_pick']:
+            # List available settings to select from
             if len(args) == 0:
                 await self.send_message(
                     'The following settings are available: '
@@ -470,7 +531,7 @@ class RandoHandler(RaceHandler):
                 await self.send_message(
                     'Use !settings <setting> to view its available values.'
                 )
-                
+            # List available values for specific setting
             elif len(args) == 1 and args[0] in draft.get('available_settings').get('major').keys():
                 setting = draft.get('available_settings').get('major').get(args[0])
                 if draft.get('status') == 'major_ban':
@@ -482,6 +543,7 @@ class RandoHandler(RaceHandler):
                     f'Available values for "{args[0]}": {", ".join(value for value in setting.keys())}'
                 )
         elif draft.get('status') == 'minor_pick':
+            # List available settings to select from
             if len(args) == 0:
                 await self.send_message(
                     'The following settings are available: '
@@ -490,6 +552,7 @@ class RandoHandler(RaceHandler):
                 await self.send_message(
                     'Use !settings <setting> to view its available values.'
                 )
+            # List available values for specific setting
             elif len(args) == 1 and args[0] in draft.get('available_settings').get('minor').keys():
                 setting = draft.get('available_settings').get('minor').get(args[0])
                 await self.send_message(
@@ -656,7 +719,7 @@ class RandoHandler(RaceHandler):
             await self.roll(
                 preset=None,
                 encrypt=encrypt,
-                dev=True,
+                dev=True, # awaiting 8.0 release
                 reply_to=reply_to,
                 settings=self.state.get('draft_data').get('drafted_settings').get('data')
             )
@@ -735,6 +798,7 @@ class RandoHandler(RaceHandler):
 
     async def determine_higher_seed(self):
         entrants = []
+        # Return list sorted by Qualifier ranking
         if self.state.get('draft_data').get('race_type') == 'tournament':
             placements = self.zsr.load_qualifier_placements()
             for entrant in self.data.get('entrants'):
@@ -742,6 +806,7 @@ class RandoHandler(RaceHandler):
                     if entrant.get('user').get('name') == place.get('name'):
                         entrants.append({'name': place.get('name'), 'rank': place.get('place')})
             return sorted(entrants, key=lambda entrant: entrant.get('rank'))    
+        # Return list sorted by RaceTime points
         elif self.state.get('draft_data').get('race_type') == 'practice':
             for entrant in self.data.get('entrants'):
                 entrants.append({'name': entrant.get('user').get('name'), 'score': (entrant.get('score') if entrant.get('score') else 0)})
