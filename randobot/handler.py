@@ -182,18 +182,18 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress() or not self._is_s7_race():
             return
-        # Requires more than one user to enable Draft Mode.
-        elif self._is_s7_race and self.data.get('entrants_count') < 2:
-            await self.send_message(
-                'At least two runners must be present before enabling Draft Mode.'
-            )
-            return
         
         draft = self.state.get('draft_data')
 
         # Handle valid arguments.
         if len(args) == 1 and args[0] in ('tournament', 'practice', 'qualifier', 'cancel'):
             if args[0] in ('tournament', 'practice') and not draft.get('enabled'):
+                # Requires more than one user to enable Draft Mode.
+                if self.data.get('entrants_count') < 2:
+                    await self.send_message(
+                        'At least two runners must be present before enabling Draft Mode.'
+                    )
+                    return
                 # Only allow tournament argument for tournament matches.
                 if args[0] == 'tournament' and 'Tournament' not in self.data.get('info_user'):
                     await self.send_message(
@@ -245,7 +245,8 @@ class RandoHandler(RaceHandler):
                     return
                 draft.update({
                     'enabled': True,
-                    'race_type': args[0]
+                    'race_type': args[0],
+                    'available_settings': self.zsr.load_available_settings()
                     })
                 await self.send_message(
                     'Welcome to OoTR Draft Mode! '
@@ -264,17 +265,21 @@ class RandoHandler(RaceHandler):
                         # Only allow Race Moderators to cancel once drafting is complete.
                         if draft.get('status') == 'complete' and not can_moderate(message):
                             await self.send_message(
-                                'Draft process has already been completed. Please contact an organizer for assistance.'
+                                'Drafting already complete. Contact a Race Moderator for assistance.'
                             )
                             return
                         await self.ex_fpa(['off'], message),
+                    # Only allow Race Moderators to cancel qualifier races.
+                    elif draft.get('race_type') == 'qualifier':
+                        if not can_moderate(message):
+                            return
                     await self.send_message(
                         'Draft Mode has been disabled.'
                     )
                     draft.clear()
                     return
                 await self.send_message(
-                    'Draft Mode is not currently enabled.'
+                    'Draft Mode is currently disabled.'
                 )
 
     async def ex_first(self, args, message):
@@ -711,11 +716,20 @@ class RandoHandler(RaceHandler):
             )
             return
         if self.state.get('draft_data').get('enabled'):
-            if not self.state.get('draft_data').get('status') == 'complete':
-                await self.send_message(
-                    f'Sorry {reply_to}, you must finish drafting settings before rolling the seed.'
-                )
+            if self.state.get('draft_data').get('race_type') == 'qualifier':
+                if not can_moderate(message):
+                    await self.send_message(
+                        'Only Race Monitors can roll qualifier seeds.'
+                    )
+                    return
+                await self.handle_qualifier_seed()
                 return
+            else:
+                if not self.state.get('draft_data').get('status') == 'complete':
+                    await self.send_message(
+                        f'Sorry {reply_to}, you must finish drafting settings before rolling the seed.'
+                    )
+                    return
             await self.roll(
                 preset=None,
                 encrypt=encrypt,
@@ -811,6 +825,15 @@ class RandoHandler(RaceHandler):
             for entrant in self.data.get('entrants'):
                 entrants.append({'name': entrant.get('user').get('name'), 'score': (entrant.get('score') if entrant.get('score') else 0)})
             return sorted(entrants, key=lambda entrant: entrant.get('score'), reverse=True)
+
+    async def handle_qualifier_seed(self):
+        count = 0
+
+        while count < 4:
+            if count < 2:
+                count += 1
+            elif count >= 2:
+                count += 1
 
     def _race_in_progress(self):
         return self.data.get('status').get('value') in ('pending', 'in_progress')
