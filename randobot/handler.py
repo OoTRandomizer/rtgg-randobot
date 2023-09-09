@@ -734,7 +734,7 @@ class RandoHandler(RaceHandler):
             return
         if self.state.get('draft_data').get('enabled'):
             if self.state.get('draft_data').get('race_type') == 'qualifier':
-                if not can_moderate(message):
+                if not can_monitor(message):
                     await self.send_message(
                         'Only Race Monitors can roll qualifier seeds.'
                     )
