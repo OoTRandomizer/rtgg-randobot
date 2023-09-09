@@ -394,7 +394,7 @@ class RandoHandler(RaceHandler):
                 return
             # Handle invalid format and unknown arguments
             await self.send_message(
-                f'Invalid option. Use !settings for available options.'
+                'Invalid option. Use !settings for available options.'
             )
 
     async def ex_pick(self, args, message):
@@ -463,7 +463,7 @@ class RandoHandler(RaceHandler):
                     return
                 # Handle invalid format and unknown arguments
                 await self.send_message(
-                    f'Invalid option. Use !settings for available options.'
+                    'Invalid option. Use !settings for available options.'
                 )
             elif draft.get('status') == 'minor_pick':
                 # Handle selecting setting from different pool.
@@ -512,7 +512,7 @@ class RandoHandler(RaceHandler):
                     return
                 # Handle invalid format and unknown arguments.
                 await self.send_message(
-                    f'Invalid option. Use !settings for available options.'
+                    'Invalid option. Use !settings for available options.'
                 )
 
     async def ex_settings(self, args, message):
