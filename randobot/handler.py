@@ -195,7 +195,7 @@ class RandoHandler(RaceHandler):
                     )
                     return
                 # Only allow tournament argument for tournament matches.
-                if args[0] == 'tournament' and 'Tournament' not in self.data.get('info_user'):
+                if args[0] == 'tournament' and 'Tournament' not in self.data.get('info_user').lower():
                     await self.send_message(
                         'Tournament Draft Mode is only available for official matches. Use !s7 practice instead.'
                     )
