@@ -114,16 +114,16 @@ class ZSR:
                 req_body = json.dumps(self.presets_dev[preset]['settings'])
             # Fetch tournament preset and patch with drafted settings.
             else:
-                self.presets_dev.get('s6').get('settings').update(settings)
-                req_body = json.dumps(self.presets_dev.get('s6').get('settings'))
+                self.presets_dev.get('s7').get('settings').update(settings)
+                req_body = json.dumps(self.presets_dev.get('s7').get('settings'))
         else:
             # Roll with provided preset for non-draft races.
             if preset is not None:
                 req_body = json.dumps(self.presets[preset]['settings'])
             # Fetch tournament preset and patch with drafted settings.
             else:
-                self.presets_dev.get('s6').get('settings').update(settings)
-                req_body = json.dumps(self.presets_dev.get('s6').get('settings'))
+                self.presets_dev.get('s7').get('settings').update(settings)
+                req_body = json.dumps(self.presets_dev.get('s7').get('settings'))
 
         params = {
             'key': self.ootr_api_key,

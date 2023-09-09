@@ -246,8 +246,12 @@ class RandoHandler(RaceHandler):
                 draft.update({
                     'enabled': True,
                     'race_type': args[0],
-                    'available_settings': self.zsr.load_available_settings()
-                    })
+                    'available_settings': self.zsr.load_available_settings(),
+                    'drafted_settings': {
+                        'picks': {},
+                        'data': {}
+                    }
+                })
                 await self.send_message(
                     'Welcome to OoTR Draft Mode! '
                     'You can disable Draft Mode with !s7 cancel.'
@@ -508,7 +512,7 @@ class RandoHandler(RaceHandler):
                     return
                 # Handle invalid format and unknown arguments.
                 await self.send_message(
-                    f'Invalid pool. Use !settings for available options.'
+                    f'Invalid option. Use !settings for available options.'
                 )
 
     async def ex_settings(self, args, message):
@@ -563,6 +567,19 @@ class RandoHandler(RaceHandler):
                 await self.send_message(
                     f'Available values for {args[0].capitalize()}: {", ".join(value for value in setting.keys())}'
                 )
+        elif draft.get('status') == 'complete':
+            if len(args) == 0:
+                setting = draft.get('drafted_settings').get('bans')
+                await self.send_message(
+                    f"Bans for this race: {', '.join(value.capitalize() for value in setting.keys())}"
+                )
+                await self.send_message(
+                    f'Picks for this race:'
+                )
+                for key, value in draft.get('drafted_settings').get('picks').items():
+                    await self.send_message(
+                        f'{key.capitalize()}: {value.capitalize()}'
+                    )
 
     @monitor_cmd
     async def ex_lock(self, args, message):
@@ -722,7 +739,7 @@ class RandoHandler(RaceHandler):
                         'Only Race Monitors can roll qualifier seeds.'
                     )
                     return
-                await self.handle_qualifier_seed()
+                await self.handle_qualifier_seed(encrypt, dev, reply_to)
                 return
             else:
                 if not self.state.get('draft_data').get('status') == 'complete':
@@ -826,14 +843,57 @@ class RandoHandler(RaceHandler):
                 entrants.append({'name': entrant.get('user').get('name'), 'score': (entrant.get('score') if entrant.get('score') else 0)})
             return sorted(entrants, key=lambda entrant: entrant.get('score'), reverse=True)
 
-    async def handle_qualifier_seed(self):
+    async def handle_qualifier_seed(self, encrypt, dev, reply_to):
+        draft = self.state.get('draft_data')
+        available_settings = draft.get('available_settings')
         count = 0
 
-        while count < 4:
-            if count < 2:
-                count += 1
-            elif count >= 2:
-                count += 1
+        while count < 2:
+            # Major pick
+            if count == 0:
+                pool = available_settings.get('major')
+            # Minor pick
+            else:
+                pool = available_settings.get('minor')
+            name = random.choice(list(pool.keys()))
+            setting = random.choice(list(pool.get(name).keys()))
+            for key, value in pool.get(name).get(setting).items():
+                draft.get('drafted_settings').get('data').update({
+                    key: value
+                })
+            pool.pop(name)
+            draft.get('drafted_settings').get('picks').update({
+                name: setting
+            })
+            count += 1
+
+        await self.roll(
+            preset=None,
+            encrypt=encrypt,
+            dev=True,
+            reply_to=reply_to,
+            settings=draft.get('drafted_settings').get('data')
+        )
+        await self.send_message(
+            'Picks will be revealed in 10 minutes.'
+        )
+        await self.send_message(
+            'Once revealed, the room will be locked from joining. '
+        )
+        # Delay settings reveal for 10 minutes
+        await sleep(600)
+        await self.send_message(
+            'Picks for this race:'
+        )
+        for key, value in draft.get('drafted_settings').get('picks').items():
+            await self.send_message(
+                f'{key.capitalize()}: {value.capitalize()}'
+            )
+        if not self.data.get('status').get('value') == 'invitational':
+            await self.set_invitational()
+        await self.send_message(
+            'Leaving the race at this point will result in a forfeit towards your qualification score.'
+        )
 
     def _race_in_progress(self):
         return self.data.get('status').get('value') in ('pending', 'in_progress')
