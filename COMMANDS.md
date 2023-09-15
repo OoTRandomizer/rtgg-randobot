@@ -88,7 +88,7 @@ automatically be disabled. Enables FPA and provides a full walkthrough for
 the draft process.
 
 `!s7 practice` - Used for practice races. Randobot will assign the two runners
-with the most RaceTime points as drafters and will walk them through the draft
+with the most racetime.gg points as drafters and will walk them through the draft
 process. 
 
 `!s7 qualifier` - Restricted to Race Moderators. Enables a special function
