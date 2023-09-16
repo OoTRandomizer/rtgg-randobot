@@ -457,7 +457,7 @@ class RandoHandler(RaceHandler):
                     # Move setting keyword from available pool to picks pool. Add literal setting to data pool.
                     drafted_settings.get('picks').update({args[0]: args[1]})
                     drafted_settings.get('data').update({
-                        setting for setting in major_pool.get(args[0]).get(args[1]).items()
+                        setting[0]: setting[1] for setting in major_pool.get(args[0]).get(args[1]).items()
                     })
                     major_pool.pop(args[0])
                     # Advance draft state. Maintain ABABBA pick order.
@@ -510,7 +510,7 @@ class RandoHandler(RaceHandler):
                     # Move setting keyword from available pool to picks pool. Add literal setting to data pool.
                     drafted_settings.get('picks').update({args[0]: args[1]})
                     drafted_settings.get('data').update({
-                        setting for setting in minor_pool.get(args[0]).get(args[1]).items()
+                        setting[0]: setting[1] for setting in minor_pool.get(args[0]).get(args[1]).items()
                     })
                     minor_pool.pop(args[0])
                     # Advance draft state. Update status after final pick.
@@ -605,34 +605,35 @@ class RandoHandler(RaceHandler):
             if len(args) == 0:
                 setting = draft.get('drafted_settings').get('bans')
                 await self.send_message(
-                    f"Bans for this race: {', '.join(value.capitalize() for value in setting.keys())}"
+                    f"Bans for this race: {', '.join(value.capitalize() for value in setting.keys())}",
+                    pinned=True
                 )
                 await self.send_message(
-                    f'Picks for this race:'
+                    'Picks for this race: ' + ', '.join(f"{key.capitalize()}: {value.capitalize()}" for key, value in draft.get('drafted_settings').get('picks').items()),
+                    pinned=True
                 )
-                for key, value in draft.get('drafted_settings').get('picks').items():
-                    await self.send_message(
-                        f'{key.capitalize()}: {value.capitalize()}'
-                    )
+                await self.send_message(
+                    '@entrants, Settings for the race are pinned above.'
+                )
         elif draft.get('status') == 'seed_rolled':
             if draft.get('auto_draft'):
                 await self.send_message(
-                    'Picks for this race:'
+                    'Picks for this race: ' + ', '.join(f"{key.capitalize()}: {value.capitalize()}" for key, value in draft.get('drafted_settings').get('picks').items()),
+                    pinned=True
                 )
-                for key, value in draft.get('drafted_settings').get('picks').items():
-                    await self.send_message(
-                        f'{key.capitalize()}: {value.capitalize()}'
-                    )
+                await self.send_message(
+                    '@entrants, Settings for the race are pinned above.'
+                )
                 return
             # Delay settings reveal for 10 minutes after rolling the seed for qualifier races
             if datetime.datetime.now() - draft.get('rolled_at') > datetime.timedelta(minutes=10):
                 await self.send_message(
-                    'Picks for this race:'
+                    'Picks for this race: ' + ', '.join(f"{key.capitalize()}: {value.capitalize()}" for key, value in draft.get('drafted_settings').get('picks').items()),
+                    pinned=True
                 )
-                for key, value in draft.get('drafted_settings').get('picks').items():
-                    await self.send_message(
-                        f'{key.capitalize()}: {value.capitalize()}'
-                    )
+                await self.send_message(
+                    '@entrants, Settings for the race are pinned above.'
+                )
                 if not self.data.get('status').get('value') == 'invitational':
                     await self.set_invitational()
                 await self.send_message(
@@ -950,7 +951,7 @@ class RandoHandler(RaceHandler):
                 'Once revealed, the room will be locked from joining.'
             )
             return
-        await self.ex_settings('','')
+        await self.ex_settings('', '')
 
     def _race_in_progress(self):
         return self.data.get('status').get('value') in ('pending', 'in_progress')
