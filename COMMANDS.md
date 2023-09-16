@@ -87,16 +87,16 @@ for each runner's qualification status. If unqualified, Draft Mode will
 automatically be disabled. Enables FPA and provides a full walkthrough for 
 the draft process.
 
-`!s7 practice` - Used for practice races. Randobot will assign the two runners
-with the most racetime.gg points as drafters and will walk them through the draft
-process. 
+`!s7 practice <draft|auto>` - Used for practice races. The `draft` argument will allow Randobot to assign 
+the two runners with the most racetime.gg points as drafters and will walk them through the draft
+process. The `auto` argument will "simulate" a draft seed by randomly selecting a setting from each settings pool.
+Runners will then use `!seed` to roll the seed and post the selected settings into the race room.
 
 `!s7 qualifier` - Restricted to Race Moderators. Enables a special function
-needed specificially for S7 Qualifier races. Randobot will "simulate" a draft seed
+needed specificially for S7 Qualifier races. Similar to `!s7 practice auto`, Randobot will "simulate" a draft seed
 by randomly selecting a setting from each settings pool. Once invoked, race monitors
-will be able to roll the seed with !seed. The seed will be posted and the settings
-will be revealed in the race room chat 10 minutes later. Randobot will then lock
-the room to prevent anyone else from joining the race.
+will be able to roll the seed with `!seed`. The race monitor will then use `!settings` to post the settings in
+the race room 5 minutes before race start and lock the race room to prevent anyone else from joining.
 
 `!s7 cancel` - Used to cancel the draft process with the ability to start over. If the
 race is a bracket match and the settings have already been drafted, this will be limited 
