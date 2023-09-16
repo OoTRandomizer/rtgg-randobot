@@ -177,9 +177,12 @@ class ZSR:
         return pool
     
     def handle_conditionals(self, dev, settings):
+        if dev:
+            preset = self.presets_dev.get('s7').get('settings')
+        else:
+            preset = self.presets.get('s7').get('settings')
+
         for key, value in settings.items():
             if key == 'shuffle_dungeon_entrances' and value == 'simple':
-                if dev:
-                    self.presets_dev.get('s7').get('settings')['allowed_tricks'].append('logic_dc_scarecrow_gs')
-                else:
-                    self.presets.get('s7').get('settings')['allowed_tricks'].append('logic_dc_scarecrow_gs')
+                preset['allowed_tricks'].append('logic_dc_scarecrow_gs')
+                
