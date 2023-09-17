@@ -991,11 +991,11 @@ class RandoHandler(RaceHandler):
 
         # Handled seperated tokensanity settings
         if 'ow_tokens' in picks.keys() and 'dungeon_tokens' in picks.keys():
-            if picks.get('ow_tokens') == 'shuffled' and picks.get('dungeon_tokens') == 'shuffled':
+            if picks.get('ow_tokens') == 'on' and picks.get('dungeon_tokens') == 'on':
                 data.update({'tokensanity': 'all'})
-            elif picks.get('ow_tokens') == 'shuffled' and picks.get('dungeon_tokens') == 'vanilla':
+            elif picks.get('ow_tokens') == 'on' and picks.get('dungeon_tokens') == 'default':
                 data.update({'tokensanity': 'overworld'})
-            elif picks.get('ow_tokens') == 'vanilla' and picks.get('dungeon_tokens') == 'shuffled':
+            elif picks.get('ow_tokens') == 'default' and picks.get('dungeon_tokens') == 'on':
                 data.update({'tokensanity': 'dungeons'})
 
         preset.update(data)
