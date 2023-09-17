@@ -977,10 +977,10 @@ class RandoHandler(RaceHandler):
         await self.ex_settings('', '')
 
     def patch_settings(self, dev):
-        preset = self.zsr.presets.get('s7').get('settings') if not dev else self.zsr.presets_dev.get('s7').get('settings')
-        drafted_settings = self.state.get('draft_data').get('drafted_settings')
-        picks = drafted_settings.get('picks')
-        data = drafted_settings.get('data')
+        settings = self.zsr.presets.get('s7').get('settings') if not dev else self.zsr.presets_dev.get('s7').get('settings')
+        preset = {**settings}
+        picks = self.state.get('draft_data').get('drafted_settings').get('picks')
+        data = self.state.get('draft_data').get('drafted_settings').get('data')
 
         # Handled seperated tokensanity settings
         if 'ow_tokens' in picks.keys() and 'dungeon_tokens' in picks.keys():
