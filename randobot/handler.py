@@ -620,7 +620,7 @@ class RandoHandler(RaceHandler):
                     pinned=True
                 )
                 await self.send_message(
-                    '@entrants, settings for the race are pinned above.'
+                    '@entrants, Picks for the race are pinned above.'
                 )
                 draft.update({
                     'status': 'settings_posted'
@@ -633,7 +633,7 @@ class RandoHandler(RaceHandler):
                 pinned=True
             )
             await self.send_message(
-                '@entrants - Settings for the race are pinned above.'
+                '@entrants - Picks for the race are pinned above.'
             )
             draft.update({
                 'status': 'settings_posted'
@@ -652,7 +652,7 @@ class RandoHandler(RaceHandler):
                     pinned=True
                 )
                 await self.send_message(
-                    '@entrants - Settings for the race are pinned above.'
+                    '@entrants - Picks for the race are pinned above.'
                 )
                 if self.data.get('status').get('value') == 'open':
                     await self.set_invitational()
