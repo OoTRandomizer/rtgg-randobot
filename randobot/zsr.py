@@ -115,18 +115,14 @@ class ZSR:
                 req_body = json.dumps(self.presets_dev[preset]['settings'])
             # Fetch tournament preset and patch with drafted settings.
             else:
-                self.handle_conditionals(dev, settings)
-                self.presets_dev.get('s7').get('settings').update(settings)
-                req_body = json.dumps(self.presets_dev.get('s7').get('settings'))
+                req_body = json.dumps(settings)
         else:
             # Roll with provided preset for non-draft races.
             if preset is not None:
                 req_body = json.dumps(self.presets[preset]['settings'])
             # Fetch tournament preset and patch with drafted settings.
             else:
-                self.handle_conditionals(dev, settings)
-                self.presets.get('s7').get('settings').update(settings)
-                req_body = json.dumps(self.presets.get('s7').get('settings'))
+                req_body = json.dumps(settings)
 
         params = {
             'key': self.ootr_api_key,
@@ -175,14 +171,3 @@ class ZSR:
         """
         pool = requests.get(self.draft_settings_pool_endpoint).json()
         return pool
-    
-    def handle_conditionals(self, dev, settings):
-        if dev:
-            preset = self.presets_dev.get('s7').get('settings')
-        else:
-            preset = self.presets.get('s7').get('settings')
-
-        for key, value in settings.items():
-            if key == 'shuffle_dungeon_entrances' and value == 'simple':
-                preset['allowed_tricks'].append('logic_dc_scarecrow_gs')
-                
