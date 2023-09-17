@@ -192,7 +192,7 @@ class RandoHandler(RaceHandler):
         elif len(args) >= 1 and args[0] in ('tournament', 'practice', 'qualifier', 'cancel'):
             if args[0] in ('tournament', 'qualifier') and not self._is_s7_race():
                 await self.send_message(
-                    'This is not an official tournament room. Use !practice <draft|auto> instead.'
+                    'This is not an official tournament room. Use !s7 practice <draft|auto> instead.'
                 )
                 return
             elif args[0] in ('tournament', 'practice') and not draft.get('enabled'):
