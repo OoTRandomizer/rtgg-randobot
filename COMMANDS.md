@@ -126,6 +126,12 @@ Effectively "ban" a setting or force it to it's default value in the base S7 pre
 handles player-turns through this command. Players each ban a single setting from "Major" setting group.
 Available options can be viewed with `!settings`.
 
+## !skip
+
+Usable by: **varies**
+
+Allows a player to skip removing a setting from the available settings pool during the banning phase.
+
 ## !pick
 
 Usable by: **varies**
