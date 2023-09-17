@@ -77,7 +77,7 @@ class RandoHandler(RaceHandler):
         self.midos_house = midos_house
 
     def _is_s7_race(self):
-        if re.match(r'\bS7\b', self.data.get('info_user')):
+        if re.match(r'(?i)\bS7 Tournament\b', self.data.get('info_user')):
             return True
         return False
 
@@ -139,12 +139,10 @@ class RandoHandler(RaceHandler):
                 ],
                 pinned=True,
             )
-            # Only allow Draft Mode for S7 races.
-            if self._is_s7_race():
-                await self.send_message(
-                    'If this is a draft race, use !s7 tournament for official matches, '
-                    'otherwise use !s7 practice.'
-                )
+            await self.send_message(
+                'If this is a draft race, use !s7 tournament for official matches, '
+                'otherwise use !s7 practice <draft|auto>.'
+            )
             self.state.setdefault('draft_data', {})
             self.state['intro_sent'] = True
         if 'locked' not in self.state:
@@ -180,14 +178,24 @@ class RandoHandler(RaceHandler):
 
         Set up room for Draft Mode.
         """
-        if self._race_in_progress() or not self._is_s7_race():
+        if self._race_in_progress():
             return
         
         draft = self.state.get('draft_data')
 
         # Handle valid arguments.
-        if len(args) >= 1 and args[0] in ('tournament', 'practice', 'qualifier', 'cancel'):
-            if args[0] in ('tournament', 'practice') and not draft.get('enabled'):
+        if len(args) == 0:
+            await self.send_message(
+                'Invalid format. Use !s7 <tournament|practice|cancel>.'
+            )
+            return
+        elif len(args) >= 1 and args[0] in ('tournament', 'practice', 'qualifier', 'cancel'):
+            if args[0] in ('tournament', 'qualifier') and not self._is_s7_race():
+                await self.send_message(
+                    'This is not an official tournament room. Use !practice <draft|auto> instead.'
+                )
+                return
+            elif args[0] in ('tournament', 'practice') and not draft.get('enabled'):
                 # Requires more than one user to enable Draft Mode.
                 if self.data.get('entrants_count') < 2:
                     await self.send_message(
@@ -197,12 +205,6 @@ class RandoHandler(RaceHandler):
                 if args[0] == 'practice' and len(args) != 2:
                     await self.send_message(
                         'Choose which kind of practice race you would like with !s7 practice <draft|auto>.'
-                    )
-                    return
-                # Only allow tournament argument for tournament matches.
-                if args[0] == 'tournament' and 'tournament' not in self.data.get('info_user').lower():
-                    await self.send_message(
-                        'Tournament Draft Mode is only available for official matches. Use !s7 practice instead.'
                     )
                     return
                 draft.update({
@@ -243,6 +245,7 @@ class RandoHandler(RaceHandler):
                             'Error fetching racer data. Exiting Draft Mode...'
                         ),
                     await self.ex_s7(['cancel'], message)
+                    return
                 await self.send_message(
                     f"{entrants[0].get('name')}, please select whether or not to ban first with !first or !second."
                 )
@@ -311,6 +314,10 @@ class RandoHandler(RaceHandler):
                 await self.send_message(
                     'Draft Mode is currently disabled.'
                 )
+            return
+        await self.send_message(
+            'Invalid option. Available options are: tournament, practice, cancel.'
+        )
 
     async def ex_first(self, args, message):
         """
@@ -836,6 +843,8 @@ class RandoHandler(RaceHandler):
                         f'Sorry {reply_to}, drafting must be completed before rolling the seed.'
                     )
                     return
+            if draft.get('race_type') in ('practice', 'tournament'):
+                await self.ex_settings('', '')
             await self.roll(
                 preset=None,
                 encrypt=encrypt,
@@ -843,14 +852,12 @@ class RandoHandler(RaceHandler):
                 reply_to=reply_to,
                 settings=self.patch_settings(dev=True)
             )
-            if draft.get('race_type') in ('practice', 'tournament'):
-                await self.ex_settings('', '')
             return 
         await self.roll(
             preset=args[0] if args else 'weekly',
             encrypt=encrypt,
             dev=dev,
-            reply_to=reply_to,
+            reply_to=reply_to
         )
 
     async def roll(self, preset, encrypt, dev, reply_to, settings=None):
