@@ -70,3 +70,84 @@ immediately if there is a ping.
 
 To prevent spam or misuse, it is also recommended that the **"Allow non-entrant
 chat"** race setting is disabled when conducting a race using FPA.
+
+## !s7
+
+Usable by: **race monitor/room opener**
+
+Make use of a new Draft Mode fully integrated into the RaceTime room. Being
+designed for the Season 7 Main Tournament, you may supply a number of arguments.
+
+NOTE: When Draft Mode is active, commands such as !preset, !presetsdev, !lock,
+etc. will be disabled. When Draft Mode is disabled, their functionality is
+restored.
+
+`!s7 tournament` - Used for S7 Bracket matches only. Randobot will check ZSR
+for each runner's qualification status. If unqualified, Draft Mode will
+automatically be disabled. Enables FPA and provides a full walkthrough for 
+the draft process.
+
+`!s7 practice <draft|auto>` - Used for practice races. The `draft` argument will allow Randobot to assign 
+the two runners with the most racetime.gg points as drafters and will walk them through the draft
+process. The `auto` argument will "simulate" a draft seed by randomly selecting a setting from each settings pool.
+Runners will then use `!seed` to roll the seed and post the selected settings into the race room.
+
+`!s7 qualifier` - Restricted to Race Moderators. Enables a special function
+needed specificially for S7 Qualifier races. Similar to `!s7 practice auto`, Randobot will "simulate" a draft seed
+by randomly selecting a setting from each settings pool. Once invoked, race monitors
+will be able to roll the seed with `!seed`. The race monitor will then use `!settings` to post the settings in
+the race room 5 minutes before race start and lock the race room to prevent anyone else from joining.
+
+`!s7 cancel` - Used to cancel the draft process with the ability to start over. If the
+race is a bracket match and the settings have already been drafted, this will be limited 
+to Race Moderators. FPA will automatically be disabled if enabled.
+
+## !first
+
+Usable by: **varies**
+
+After enabling Draft Mode, RandoBot will assign a player as the higher-seeded player whether
+based on qualifier placements or RaceTime points. This command allows that player the option
+to pick first in the draft process.
+
+## !second
+
+Usable by: **varies**
+
+Like `!first`, after enabling Draft Mode, RandoBot will assign a player as the higher-seeded player 
+whether based on qualifier placements or RaceTime points. This command allows that player the option
+to pick second in the draft process.
+
+## !ban
+
+Usable by: **varies**
+
+Effectively "ban" a setting or force it to it's default value in the base S7 preset. RandoBot logically
+handles player-turns through this command. Players each ban a single setting from "Major" setting group.
+Available options can be viewed with `!settings`.
+
+## !skip
+
+Usable by: **varies**
+
+Allows a player to skip removing a setting from the available settings pool during the banning phase.
+
+## !pick
+
+Usable by: **varies**
+
+Effectively "pick" a setting and it's value following the format `!pick <setting> <value>`. Available 
+options can be viewed with `!settings`. Values for a specific setting can be viewed with `!settings <setting>`.
+Like with `!ban`, RandoBot logically handles player-turns. Each player picks a single setting from both the
+"Major" and "Minor" settings pools, totally to two picks per player.
+
+## !settings
+
+Usable by: anyone
+
+This command will have different return values depending on the state of the draft. During the banning phase,
+it will provide players with a list of available options to select from. Players can view the default value of
+a setting with `!settings <setting>`. During the pick phase, it will provide players with a list of options from
+either the "Major" pool if picking a major setting, or the "Minor" pool if picking a minor setting. Players can
+view specific values of a setting with `!settings <setting>`. If the draft process has already been completed,
+it will return a list of all bans/picks made during the draft process.

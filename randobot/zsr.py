@@ -16,6 +16,8 @@ class ZSR:
     preset_dev_endpoint = 'https://ootrandomizer.com/rtgg/ootr_presets_dev.json'
     settings_endpoint = 'https://raw.githubusercontent.com/TestRunnerSRL/OoT-Randomizer/release/data/presets_default.json'
     settings_dev_endpoint = 'https://raw.githubusercontent.com/TestRunnerSRL/OoT-Randomizer/Dev/data/presets_default.json'
+    qualifier_placement_endpoint = 'https://ootrandomizer.com/tournament/seedsOnly'
+    draft_settings_pool_endpoint = 'https://ootrandomizer.com/rtgg/draft_settings.json'
 
     hash_map = {
         'Beans': 'HashBeans',
@@ -100,7 +102,7 @@ class ZSR:
             return latest_dev_version, True
         return latest_dev_version, False
 
-    def roll_seed(self, preset, encrypt, dev):
+    def roll_seed(self, preset, encrypt, dev, settings):
         """
         Generate a seed and return its public URL.
         """
@@ -108,9 +110,20 @@ class ZSR:
             latest_dev_version, changed = self.get_latest_dev_version()
             if changed:
                 self.presets_dev = self.load_presets_dev()
-            req_body = json.dumps(self.presets_dev[preset]['settings'])
+            # Roll with provided preset for non-draft races.
+            if preset is not None:
+                req_body = json.dumps(self.presets_dev[preset]['settings'])
+            # Fetch tournament preset and patch with drafted settings.
+            else:
+                req_body = json.dumps(settings)
         else:
-            req_body = json.dumps(self.presets[preset]['settings'])
+            # Roll with provided preset for non-draft races.
+            if preset is not None:
+                req_body = json.dumps(self.presets[preset]['settings'])
+            # Fetch tournament preset and patch with drafted settings.
+            else:
+                req_body = json.dumps(settings)
+
         params = {
             'key': self.ootr_api_key,
         }
@@ -144,3 +157,17 @@ class ZSR:
             self.hash_map.get(item, item)
             for item in settings['file_hash']
         )
+    
+    def load_qualifier_placements(self):
+        """
+        Returns qualifier placement data for Tournament matches.
+        """
+        placement = requests.get(self.qualifier_placement_endpoint).json()
+        return placement
+    
+    def load_available_settings(self):
+        """
+        Settings pool for Draft Mode.
+        """
+        pool = requests.get(self.draft_settings_pool_endpoint).json()
+        return pool
