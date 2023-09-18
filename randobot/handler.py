@@ -612,6 +612,9 @@ class RandoHandler(RaceHandler):
 
         List available settings and values.
         """
+        if not draft.get('enabled'):
+            return
+        
         draft = self.state.get('draft_data')
         major_pool = draft.get('available_settings').get('major')
         minor_pool = draft.get('available_settings').get('minor')
