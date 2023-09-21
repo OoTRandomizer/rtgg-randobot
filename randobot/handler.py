@@ -526,8 +526,7 @@ class RandoHandler(RaceHandler):
                     return
                 if draft.get('pick_count') == 2:
                     draft.update({
-                        'status': 'minor_pick',
-                        'current_selector': racer[1].get('name')
+                        'status': 'minor_pick'
                     })
                     await self.send_message(
                         f"{draft.get('current_selector')}, modify a minor setting with !pick <setting> <value>."
