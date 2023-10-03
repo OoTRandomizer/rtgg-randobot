@@ -629,6 +629,7 @@ class RandoHandler(RaceHandler):
                 await self.send_message(
                     'Use !settings <setting> to view available values.'
                 )
+            # List available values for specific setting
             elif len(args) == 1 and args[0] in major_pool.keys():
                 setting = major_pool.get(args[0])
                 if draft.get('status') == 'major_pick':
