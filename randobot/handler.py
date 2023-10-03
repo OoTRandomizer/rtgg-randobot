@@ -632,11 +632,10 @@ class RandoHandler(RaceHandler):
             # List available values for specific setting
             elif len(args) == 1 and args[0] in major_pool.keys():
                 setting = major_pool.get(args[0])
-                if draft.get('status') == 'major_pick':
-                    await self.send_message(
-                        f'Available values for {args[0].capitalize()}: {", ".join(value for value in setting.keys())}'
-                    )
-                    return
+                await self.send_message(
+                    f'Available values for {args[0].capitalize()}: {", ".join(value for value in setting.keys())}'
+                )
+                return
         elif draft.get('status') == 'minor_pick':
             # List available settings to select from
             if len(args) == 0:
