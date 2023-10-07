@@ -344,7 +344,7 @@ class RandoHandler(RaceHandler):
         await self.send_message(
             'Use !skip to avoid removing a setting.'
         )
-        draft.update({'status': 'major_ban'})
+        draft.update({'status': 'ban'})
 
     async def ex_second(self, args, message):
         """
@@ -372,7 +372,7 @@ class RandoHandler(RaceHandler):
         await self.send_message(
             'Use !skip to avoid removing a setting.'
         )
-        draft.update({'status': 'major_ban'})
+        draft.update({'status': 'ban'})
             
     async def ex_ban(self, args, message):
         """
@@ -381,29 +381,21 @@ class RandoHandler(RaceHandler):
         Force setting to default value.
         """
         draft = self.state.get('draft_data')
-        if self._race_in_progress() or draft.get('status') != 'major_ban':
+        if self._race_in_progress() or draft.get('status') != 'ban':
             return
         
         reply_to = message.get('user', {}).get('name')
         racer = draft.get('racers')
         major_pool = draft.get('available_settings').get('major')
         minor_pool = draft.get('available_settings').get('minor')
-        data = draft.get('drafted_settings').get('data')
 
         if reply_to == draft.get('current_selector'):
-            # Handle setting from different pool.
-            if len(args) == 1 and args[0] in minor_pool.keys():
-                    await self.send_message(
-                        'Invalid pool. Use !settings for available options.'
-                    )
-                    return
-            elif len(args) == 1 and args[0] in major_pool.keys():
-                settings = major_pool.get(args[0])
+            if len(args) == 1 and (args[0] in major_pool.keys() or args[0] in minor_pool.keys()):
                 await self.send_message(
                     f'{args[0].capitalize()} will be removed from the pool.'
                 )
                 # Remove setting from available settings pool
-                major_pool.pop(args[0])
+                major_pool.pop(args[0]) if args[0] in major_pool.keys() else minor_pool.pop(args[0])
                 # Advance draft state.
                 draft['ban_count'] += 1
                 # Change player turn post setting selection.
@@ -441,7 +433,7 @@ class RandoHandler(RaceHandler):
 
     async def ex_skip(self, args, message):
         draft = self.state.get('draft_data')
-        if self._race_in_progress() or draft.get('status') != 'major_ban':
+        if self._race_in_progress() or draft.get('status') != 'ban':
             return
         
         reply_to = message.get('user', {}).get('name')
@@ -617,30 +609,33 @@ class RandoHandler(RaceHandler):
         
         major_pool = draft.get('available_settings').get('major')
         minor_pool = draft.get('available_settings').get('minor')
+        combined_pool = {**major_pool, **minor_pool}
         picks = draft.get('drafted_settings').get('picks')
 
-        if self._race_in_progress() or not draft.get('status') in ['major_ban', 'major_pick', 'minor_pick', 'complete', 'seed_rolled']:
+        if self._race_in_progress() or not draft.get('status') in ['ban', 'major_pick', 'minor_pick', 'complete', 'seed_rolled']:
             return
-        if draft.get('status') in ['major_ban', 'major_pick']:
+        if draft.get('status') == 'ban' and len(args) == 0:
+            await self.send_message(
+                'The following settings are available: '
+                f"{' | '.join(combined_pool.keys())}"
+            )
+        elif draft.get('status') == 'major_pick':
             # List available settings to select from
             if len(args) == 0:
                 await self.send_message(
                     'The following settings are available: '
                     f"{' | '.join(major_pool.keys())}"
                 )
-                if draft.get('status') == 'major_pick':
-                    await self.send_message(
-                        'Use !settings <setting> to view available values.'
-                    )
-                    return
+                await self.send_message(
+                    'Use !settings <setting> to view available values.'
+                )
             # List available values for specific setting
             elif len(args) == 1 and args[0] in major_pool.keys():
                 setting = major_pool.get(args[0])
-                if draft.get('status') == 'major_pick':
-                    await self.send_message(
-                        f'Available values for {args[0].capitalize()}: {", ".join(value for value in setting.keys())}'
-                    )
-                    return
+                await self.send_message(
+                    f'Available values for {args[0].capitalize()}: {", ".join(value for value in setting.keys())}'
+                )
+                return
         elif draft.get('status') == 'minor_pick':
             # List available settings to select from
             if len(args) == 0:
