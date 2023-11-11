@@ -990,8 +990,8 @@ class RandoHandler(RaceHandler):
             return
         await self.ex_settings('', '')
 
-    def patch_settings(self, dev):
-        settings = self.zsr.presets.get('s7').get('settings') if not dev else self.zsr.presets_dev.get('s7').get('settings')
+    def patch_settings(self):
+        settings = self.zsr.presets.get('s7').get('settings')
         preset = {**settings}
         picks = self.state.get('draft_data').get('drafted_settings').get('picks')
         data = self.state.get('draft_data').get('drafted_settings').get('data')
