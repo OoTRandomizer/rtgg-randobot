@@ -855,9 +855,9 @@ class RandoHandler(RaceHandler):
             await self.roll(
                 preset=None,
                 encrypt=encrypt,
-                dev=True, # awaiting 8.0 release
+                dev=dev,
                 reply_to=reply_to,
-                settings=self.patch_settings(dev=True)
+                settings=self.patch_settings()
             )
             return 
         await self.roll(
@@ -976,9 +976,9 @@ class RandoHandler(RaceHandler):
         await self.roll(
             preset=None,
             encrypt=encrypt,
-            dev=True,
+            dev=dev,
             reply_to=reply_to,
-            settings=self.patch_settings(dev=True)
+            settings=self.patch_settings()
         )
         if draft.get('race_type') == 'qualifier':
             await self.send_message(
