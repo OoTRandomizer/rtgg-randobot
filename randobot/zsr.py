@@ -132,7 +132,7 @@ class ZSR:
         if encrypt and dev:
             params['locked'] = 'true'
         if race_type == 'qualifier':
-            params['hideSettings'] = True
+            params['hideSettings'] = 'true'
         if dev:
             params['version'] = 'dev_' + latest_dev_version
         data = requests.post(self.seed_endpoint, req_body, params=params,
