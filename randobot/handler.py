@@ -76,11 +76,6 @@ class RandoHandler(RaceHandler):
         self.zsr = zsr
         self.midos_house = midos_house
 
-    def _is_s7_race(self):
-        if re.match(r'(?i)\bS7 Tournament\b', self.data.get('info_user')):
-            return True
-        return False
-
     async def should_stop(self):
         goal_name = self.data.get('goal', {}).get('name')
         goal_is_custom = self.data.get('goal', {}).get('custom', False)
@@ -190,12 +185,7 @@ class RandoHandler(RaceHandler):
             )
             return
         elif len(args) >= 1 and args[0] in ('tournament', 'practice', 'qualifier', 'cancel'):
-            if args[0] in ('tournament', 'qualifier') and not self._is_s7_race():
-                await self.send_message(
-                    'This is not an official tournament room. Use !s7 practice <draft|auto> instead.'
-                )
-                return
-            elif args[0] in ('tournament', 'practice') and not draft.get('enabled'):
+            if args[0] in ('tournament', 'practice') and not draft.get('enabled'):
                 # Requires more than one user to enable Draft Mode.
                 if self.data.get('entrants_count') < 2:
                     await self.send_message(
@@ -612,9 +602,14 @@ class RandoHandler(RaceHandler):
         combined_pool = {**major_pool, **minor_pool}
         picks = draft.get('drafted_settings').get('picks')
 
-        if self._race_in_progress() or not draft.get('status') in ['ban', 'major_pick', 'minor_pick', 'complete', 'seed_rolled']:
+        if self._race_in_progress() or not draft.get('status') in ['ban', 'major_pick', 'minor_pick', 'complete', 'seed_rolled', 'settings_posted']:
             return
-        if draft.get('status') == 'ban' and len(args) == 0:
+        if draft.get('status') == 'settings_posted':
+            await self.send_message(
+                'The settings have already been pinned above.'
+            )
+            return
+        elif draft.get('status') == 'ban' and len(args) == 0:
             await self.send_message(
                 'The following settings are available: '
                 f"{' | '.join(combined_pool.keys())}"
@@ -653,8 +648,6 @@ class RandoHandler(RaceHandler):
                     f'Available values for {args[0].capitalize()}: {", ".join(value for value in setting.keys())}'
                 )
         elif draft.get('status') == 'complete':
-            if draft.get('status') == 'settings_posted':
-                return
             if len(args) == 0:
                 await self.send_message(
                     'Picks for this race: ' + ', '.join(f"{key.capitalize()}: {value.capitalize()}" for key, value in picks.items()),
@@ -667,8 +660,6 @@ class RandoHandler(RaceHandler):
                     'status': 'settings_posted'
                 })
         elif draft.get('status') == 'seed_rolled' and draft.get('auto_draft'):
-            if draft.get('status') == 'settings_posted':
-                return
             await self.send_message(
                 'Picks for this race: ' + ', '.join(f"{key.capitalize()}: {value.capitalize()}" for key, value in picks.items()),
                 pinned=True
@@ -683,11 +674,6 @@ class RandoHandler(RaceHandler):
         # Delay settings reveal for 10 minutes after rolling the seed for qualifier races
         if draft.get('race_type') == 'qualifier':
             if datetime.datetime.now() - draft.get('rolled_at') > datetime.timedelta(minutes=10):
-                if draft.get('status') == 'settings_posted':
-                    await self.send_message(
-                        'The settings have already been pinned above.'
-                    )
-                    return
                 await self.send_message(
                     'Picks for this race: ' + ', '.join(f"{key.capitalize()}: {value.capitalize()}" for key, value in picks.items()),
                     pinned=True
@@ -715,10 +701,7 @@ class RandoHandler(RaceHandler):
 
         Prevent seed rolling unless user is a race monitor.
         """
-        if self.state.get('draft_data').get('enabled'):
-            await self.send_message(
-                'Sorry, this command is disabled for Draft Mode.'
-            )
+        if self._race_in_progress():
             return
         self.state['locked'] = True
         await self.send_message(
@@ -733,11 +716,6 @@ class RandoHandler(RaceHandler):
         Remove lock preventing seed rolling unless user is a race monitor.
         """
         if self._race_in_progress():
-            return
-        elif self.state.get('draft_data').get('enabled'):
-            await self.send_message(
-                'Sorry, this command is disabled for Draft Mode.'
-            )
             return
         self.state['locked'] = False
         await self.send_message(
@@ -863,16 +841,11 @@ class RandoHandler(RaceHandler):
         if draft.get('enabled'):
             if draft.get('race_type') == 'qualifier' or (draft.get('race_type') == 'practice' and draft.get('auto_draft')):
                 if draft.get('race_type') == 'qualifier':
-                    if not can_monitor(message):
-                        await self.send_message(
-                            'Only Race Monitors can roll qualifier seeds.'
-                        )
-                        return
                     draft.update({'rolled_at': datetime.datetime.now()})
                 await self.handle_random_seed(encrypt, dev, reply_to)
                 return
             else:
-                if draft.get('status') not in ('complete', 'settings_posted'):
+                if draft.get('status') != 'complete':
                     await self.send_message(
                         f'Sorry {reply_to}, drafting must be completed before rolling the seed.'
                     )
@@ -882,9 +855,9 @@ class RandoHandler(RaceHandler):
             await self.roll(
                 preset=None,
                 encrypt=encrypt,
-                dev=True, # awaiting 8.0 release
+                dev=dev,
                 reply_to=reply_to,
-                settings=self.patch_settings(dev=True)
+                settings=self.patch_settings()
             )
             return 
         await self.roll(
@@ -908,7 +881,7 @@ class RandoHandler(RaceHandler):
                 )
                 return
 
-        seed_id, seed_uri = self.zsr.roll_seed(preset, encrypt, dev, settings)
+        seed_id, seed_uri = self.zsr.roll_seed(preset, encrypt, dev, settings, self.state.get('draft_data').get('race_type'))
 
         await self.send_message(
             '%(reply_to)s, here is your seed: %(seed_uri)s'
@@ -1003,9 +976,9 @@ class RandoHandler(RaceHandler):
         await self.roll(
             preset=None,
             encrypt=encrypt,
-            dev=True,
+            dev=dev,
             reply_to=reply_to,
-            settings=self.patch_settings(dev=True)
+            settings=self.patch_settings()
         )
         if draft.get('race_type') == 'qualifier':
             await self.send_message(
@@ -1017,8 +990,8 @@ class RandoHandler(RaceHandler):
             return
         await self.ex_settings('', '')
 
-    def patch_settings(self, dev):
-        settings = self.zsr.presets.get('s7').get('settings') if not dev else self.zsr.presets_dev.get('s7').get('settings')
+    def patch_settings(self):
+        settings = self.zsr.presets.get('s7').get('settings')
         preset = {**settings}
         picks = self.state.get('draft_data').get('drafted_settings').get('picks')
         data = self.state.get('draft_data').get('drafted_settings').get('data')

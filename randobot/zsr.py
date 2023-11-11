@@ -102,7 +102,7 @@ class ZSR:
             return latest_dev_version, True
         return latest_dev_version, False
 
-    def roll_seed(self, preset, encrypt, dev, settings):
+    def roll_seed(self, preset, encrypt, dev, settings, race_type):
         """
         Generate a seed and return its public URL.
         """
@@ -131,6 +131,8 @@ class ZSR:
             params['encrypt'] = 'true'
         if encrypt and dev:
             params['locked'] = 'true'
+        if race_type == 'qualifier':
+            params['hideSettings'] = 'true'
         if dev:
             params['version'] = 'dev_' + latest_dev_version
         data = requests.post(self.seed_endpoint, req_body, params=params,
