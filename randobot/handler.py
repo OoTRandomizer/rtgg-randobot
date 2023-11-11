@@ -76,11 +76,6 @@ class RandoHandler(RaceHandler):
         self.zsr = zsr
         self.midos_house = midos_house
 
-    def _is_s7_race(self):
-        if re.match(r'(?i)\bS7 Tournament\b', self.data.get('info_user')):
-            return True
-        return False
-
     async def should_stop(self):
         goal_name = self.data.get('goal', {}).get('name')
         goal_is_custom = self.data.get('goal', {}).get('custom', False)
@@ -190,12 +185,7 @@ class RandoHandler(RaceHandler):
             )
             return
         elif len(args) >= 1 and args[0] in ('tournament', 'practice', 'qualifier', 'cancel'):
-            if args[0] in ('tournament', 'qualifier') and not self._is_s7_race():
-                await self.send_message(
-                    'This is not an official tournament room. Use !s7 practice <draft|auto> instead.'
-                )
-                return
-            elif args[0] in ('tournament', 'practice') and not draft.get('enabled'):
+            if args[0] in ('tournament', 'practice') and not draft.get('enabled'):
                 # Requires more than one user to enable Draft Mode.
                 if self.data.get('entrants_count') < 2:
                     await self.send_message(
