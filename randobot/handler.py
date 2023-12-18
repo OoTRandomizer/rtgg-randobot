@@ -136,7 +136,7 @@ class RandoHandler(RaceHandler):
             )
             await self.send_message(
                 'If this is a draft race, use !s7 tournament for official matches, '
-                'otherwise use !s7 practice <draft|auto>.'
+                'otherwise use !s7 <draft|random>'
             )
             self.state.setdefault('draft_data', {})
             self.state['intro_sent'] = True
@@ -181,20 +181,15 @@ class RandoHandler(RaceHandler):
         # Handle valid arguments.
         if len(args) == 0:
             await self.send_message(
-                'Invalid format. Use !s7 <tournament|practice|cancel>.'
+                'Invalid format. Use !s7 <tournament|draft|random|cancel>.'
             )
             return
-        elif len(args) >= 1 and args[0] in ('tournament', 'practice', 'qualifier', 'cancel'):
-            if args[0] in ('tournament', 'practice') and not draft.get('enabled'):
+        elif len(args) == 1 and args[0] in ('tournament', 'draft', 'random', 'qualifier', 'cancel'):
+            if args[0] in ('tournament', 'draft', 'random') and not draft.get('enabled'):
                 # Requires more than one user to enable Draft Mode.
                 if self.data.get('entrants_count') < 2:
                     await self.send_message(
                         'At least two runners must be present before enabling Draft Mode.'
-                    )
-                    return
-                if args[0] == 'practice' and len(args) != 2:
-                    await self.send_message(
-                        'Choose which kind of practice race you would like with !s7 practice <draft|auto>.'
                     )
                     return
                 draft.update({
@@ -206,13 +201,13 @@ class RandoHandler(RaceHandler):
                     'You can disable Draft Mode with !s7 cancel.'
                 ),
                 await self.send_message(
-                    f'This is a {args[0]} race.'
+                    f'This is a "{args[0]}" race.'
                 )
                 # Always enable FPA for official matches.
                 if draft.get('race_type') == 'tournament':
                     await self.ex_fpa(['on'], message)
                 # Add necessary property for random practice races and exit draft function
-                elif draft.get('race_type') == 'practice' and args[1] == 'auto':
+                elif draft.get('race_type') == 'random':
                     draft.update({
                         'auto_draft': True,
                         'status': 'seed_rolled',
@@ -270,9 +265,9 @@ class RandoHandler(RaceHandler):
                     'You can disable Draft Mode with !s7 cancel.'
                 ),
                 await self.send_message(
-                    f"This is a {args[0]} race. Race monitors, use !seed 15 minutes prior to race start for a seed."
+                    f'This is a "{args[0]}" race. Race monitors, use !seed 15 minutes prior to race start for a seed.'
                 )
-            elif args[0] in ('tournament', 'practice', 'qualifier') and draft.get('enabled'):
+            elif args[0] in ('tournament', 'draft', 'random', 'qualifier') and draft.get('enabled'):
                 await self.send_message(
                     'Draft Mode is already enabled.'
                 )
@@ -305,7 +300,7 @@ class RandoHandler(RaceHandler):
                 )
             return
         await self.send_message(
-            'Invalid option. Available options are: tournament, practice, cancel.'
+            'Invalid option. Available options are: tournament, draft, random, cancel.'
         )
 
     async def ex_first(self, args, message):
@@ -445,6 +440,9 @@ class RandoHandler(RaceHandler):
                     f"{draft.get('current_selector')}, remove a setting with !ban <setting>."
                 )
                 await self.send_message(
+                    'Use !skip to avoid removing a setting.'
+                )
+                await self.send_message(
                     'Use !settings for available options.'
                 )
             elif draft.get('ban_count') == 2:
@@ -579,7 +577,7 @@ class RandoHandler(RaceHandler):
                     f"{draft.get('current_selector')}, modify a minor setting with !pick <setting> <value>."
                 )
                 await self.send_message(
-                    'Use !settings to for available options.'
+                    'Use !settings for available options.'
                 )
                 return
             # Handle invalid format and unknown arguments.
@@ -839,7 +837,7 @@ class RandoHandler(RaceHandler):
             )
             return
         if draft.get('enabled'):
-            if draft.get('race_type') == 'qualifier' or (draft.get('race_type') == 'practice' and draft.get('auto_draft')):
+            if draft.get('race_type') == 'qualifier' or draft.get('auto_draft'):
                 if draft.get('race_type') == 'qualifier':
                     draft.update({'rolled_at': datetime.datetime.now()})
                 await self.handle_random_seed(encrypt, dev, reply_to)
@@ -850,7 +848,7 @@ class RandoHandler(RaceHandler):
                         f'Sorry {reply_to}, drafting must be completed before rolling the seed.'
                     )
                     return
-            if draft.get('race_type') in ('practice', 'tournament'):
+            if draft.get('race_type') in ('draft', 'random', 'tournament'):
                 await self.ex_settings('', '')
             await self.roll(
                 preset=None,
@@ -943,7 +941,7 @@ class RandoHandler(RaceHandler):
                         entrants.append({'name': entrant.get('user').get('name'), 'rank': place.get('place')})
             return sorted(entrants, key=lambda entrant: entrant.get('rank'))    
         # Return list sorted by RaceTime points
-        elif self.state.get('draft_data').get('race_type') == 'practice':
+        elif self.state.get('draft_data').get('race_type') == 'draft':
             for entrant in self.data.get('entrants'):
                 entrants.append({'name': entrant.get('user').get('name'), 'score': (entrant.get('score') if entrant.get('score') else 0)})
             return sorted(entrants, key=lambda entrant: entrant.get('score'), reverse=True)
@@ -954,9 +952,9 @@ class RandoHandler(RaceHandler):
         drafted_settings = draft.get('drafted_settings')
         count = 0
 
-        while count < 2:
+        while count < 4:
             # Major pick
-            if count == 0:
+            if count < 2:
                 pool = available_settings.get('major')
             # Minor pick
             else:
