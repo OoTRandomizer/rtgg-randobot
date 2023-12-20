@@ -4,6 +4,7 @@ import datetime
 import re
 import random
 from racetime_bot import RaceHandler, monitor_cmd, can_moderate, can_monitor, msg_actions
+from .friendly_names import FriendlyNames
 
 
 def natjoin(sequence, default):
@@ -57,6 +58,7 @@ def parse_duration(args, default):
             arg = arg[len(match.group(0)):]
     return duration
 
+
 class RandoHandler(RaceHandler):
     """
     RandoBot race handler. Generates seeds, presets, and frustration.
@@ -71,6 +73,8 @@ class RandoHandler(RaceHandler):
         'I can roll a race seed for you. If you dare.',
         'All rolled seeds comply with the laws of thermodynamics.',
     )
+
+    friendly_names = FriendlyNames()
 
     def __init__(self, zsr, midos_house, **kwargs):
         super().__init__(**kwargs)
@@ -136,8 +140,24 @@ class RandoHandler(RaceHandler):
                 pinned=True,
             )
             await self.send_message(
-                'If this is a draft race, use !s7 tournament for official matches, '
-                'otherwise use !s7 <draft|random>'
+                'If this is a draft race, you may use the buttons below',
+                actions=[
+                    msg_actions.Action(
+                        label='Tournament race',
+                        help_text='For S7 bracket matches only. Enables FPA, provides full draft walkthrough',
+                        message='!s7 tournament'
+                    ),
+                    msg_actions.Action(
+                        label='Draft race',
+                        help_text='Draft practice. Top 2 racers in room ban 2 / pick 2 major / pick 2 minor settings.',
+                        message='!s7 draft'
+                    ),
+                    msg_actions.Action(
+                        label='Auto draft',
+                        help_text='Randomly chooses 2 major and 2 minor settings.',
+                        message='!s7 random'
+                    ),
+                ]
             )
             self.state.setdefault('draft_data', {})
             self.state['intro_sent'] = True
@@ -176,7 +196,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        
+
         draft = self.state.get('draft_data')
 
         # Handle valid arguments.
@@ -222,7 +242,7 @@ class RandoHandler(RaceHandler):
                         f'Use !seed 15 minutes prior to race start for a seed.'
                     )
                     return
-                    
+
                 entrants = await self.determine_higher_seed()
 
                 # If we can't seed players, exit Draft Mode.
@@ -233,7 +253,19 @@ class RandoHandler(RaceHandler):
                     await self.ex_s7(['cancel'], message)
                     return
                 await self.send_message(
-                    f"{entrants[0].get('name')}, please select whether or not to ban first with !first or !second."
+                    f"{entrants[0].get('name')}, please choose who gets to ban a setting first.",
+                    actions=[
+                        msg_actions.Action(
+                            label=entrants[0].get('name'),
+                            help_text='Higher seed bans first.',
+                            message='!first'
+                        ),
+                        msg_actions.Action(
+                            label=entrants[1].get('name'),
+                            help_text='Lower seed bans first.',
+                            message='!second'
+                        ),
+                    ]
                 )
                 draft.update({
                     'racers': entrants,
@@ -313,26 +345,19 @@ class RandoHandler(RaceHandler):
         draft = self.state.get('draft_data')
         if self._race_in_progress() or not draft.get('status') == 'select_order':
             return
-        
+
         reply_to = message.get('user', {}).get('name')
         racer = draft.get('racers')
 
-        # Compare sender to draft_data 
+        # Compare sender to draft_data
         if racer[0].get('name') != reply_to:
             return
+
         draft.update({'current_selector': racer[0].get('name')})
-        await self.send_message(
-            f'{reply_to}, remove a setting with !ban <setting>.'
-        )
-        await self.send_message(
-            'Use !settings for available options.'
-        )
-        await self.send_message(
-            'Use !skip to avoid removing a setting.'
-        )
+        await self.draft_invite_to_ban_setting()
         draft.update({'status': 'ban'})
 
-    async def ex_second(self, args, message):
+    async def ex_second(self, _args, message):
         """
         Handle !second commands.
 
@@ -341,25 +366,75 @@ class RandoHandler(RaceHandler):
         draft = self.state.get('draft_data')
         if self._race_in_progress() or not draft.get('status') == 'select_order':
             return
-        
+
         reply_to = message.get('user', {}).get('name')
         racer = draft.get('racers')
 
-        # Compare sender to draft_data 
+        # Compare sender to draft_data
         if racer[0].get('name') != reply_to:
             return
+
         draft.update({'current_selector': racer[1].get('name')})
-        await self.send_message(
-            f"{draft.get('current_selector')}, remove a setting with !ban <setting>."
-        )
-        await self.send_message(
-            'Use !settings for available options.'
-        )
-        await self.send_message(
-            'Use !skip to avoid removing a setting.'
-        )
+        await self.draft_invite_to_ban_setting()
         draft.update({'status': 'ban'})
-            
+
+    async def draft_invite_to_ban_setting(self):
+        draft = self.state.get('draft_data')
+
+        major_pool = draft.get('available_settings').get('major')
+        minor_pool = draft.get('available_settings').get('minor')
+        combined_pool = {**major_pool, **minor_pool}
+
+        await self.send_message(
+            f"{draft.get('current_selector')}, you may ban a setting or skip your ban phase.",
+            actions=[
+                msg_actions.Action(
+                    label='Ban a setting',
+                    help_text='Pick a setting to ban from the list',
+                    message='!ban ${setting}',
+                    submit='Ban setting',
+                    survey=msg_actions.Survey(
+                        msg_actions.SelectInput(
+                            name='setting',
+                            label='Setting to ban',
+                            options={setting: self.friendly_names.setting(setting) for setting in combined_pool.keys()},
+                        ),
+                    ),
+                ),
+                msg_actions.Action(
+                    label='Skip',
+                    help_text='Skip your ban phase and yield to the other player',
+                    message='!skip',
+                ),
+            ]
+        )
+
+    async def draft_invite_to_pick_setting(self, type, pool):
+        draft = self.state.get('draft_data')
+
+        await self.send_message(
+            f"{draft.get('current_selector')}, you must modify a {type} setting.",
+            actions=[
+                msg_actions.Action(
+                    label=f'Pick a {type} setting',
+                    help_text='Pick a setting to modify from the list',
+                    message='!pick ${choice}',
+                    submit=f'Pick setting',
+                    survey=msg_actions.Survey(
+                        msg_actions.SelectInput(
+                            name='choice',
+                            label='Setting to modify',
+                            options={
+                                f'{setting} {option}':
+                                    f'{self.friendly_names.setting(setting)}: {self.friendly_names.option(setting, option)}'
+                                for setting in pool.keys() for option in pool.get(setting).keys()
+                            },
+                        ),
+                    ),
+                ),
+            ]
+        )
+
     async def ex_ban(self, args, message):
         """
         Handles !ban commands.
@@ -369,7 +444,7 @@ class RandoHandler(RaceHandler):
         draft = self.state.get('draft_data')
         if self._race_in_progress() or draft.get('status') != 'ban':
             return
-        
+
         reply_to = message.get('user', {}).get('name')
         racer = draft.get('racers')
         major_pool = draft.get('available_settings').get('major')
@@ -378,7 +453,7 @@ class RandoHandler(RaceHandler):
         if reply_to == draft.get('current_selector'):
             if len(args) == 1 and (args[0] in major_pool.keys() or args[0] in minor_pool.keys()):
                 await self.send_message(
-                    f'{args[0].capitalize()} will be removed from the pool.'
+                    f'{self.friendly_names.setting(args[0])} will be removed from the pool.'
                 )
                 # Remove setting from available settings pool
                 major_pool.pop(args[0]) if args[0] in major_pool.keys() else minor_pool.pop(args[0])
@@ -395,22 +470,9 @@ class RandoHandler(RaceHandler):
                     await self.send_message(
                         'All bans have been recorded.'
                     )
-                    await self.send_message(
-                        f"{draft.get('current_selector')}, modify a major setting with !pick <setting> <value>."
-                    )
-                    await self.send_message(
-                        'Use !settings for of available options.'
-                    )
+                    await self.draft_invite_to_pick_setting('major', major_pool)
                     return
-                await self.send_message(
-                    f"{draft.get('current_selector')}, remove a setting with !ban <setting>."
-                )
-                await self.send_message(
-                    'Use !settings for available options.'
-                )
-                await self.send_message(
-                    'Use !skip to avoid removing a setting.'
-                )
+                await self.draft_invite_to_ban_setting()
                 return
             # Handle invalid format and unknown arguments
             await self.send_message(
@@ -421,7 +483,7 @@ class RandoHandler(RaceHandler):
         draft = self.state.get('draft_data')
         if self._race_in_progress() or draft.get('status') != 'ban':
             return
-        
+
         reply_to = message.get('user', {}).get('name')
         racer = draft.get('racers')
 
@@ -437,26 +499,14 @@ class RandoHandler(RaceHandler):
             elif reply_to == racer[1].get('name'):
                 draft.update({'current_selector': racer[0].get('name')})
             if draft.get('ban_count') < 2:
-                await self.send_message(
-                    f"{draft.get('current_selector')}, remove a setting with !ban <setting>."
-                )
-                await self.send_message(
-                    'Use !skip to avoid removing a setting.'
-                )
-                await self.send_message(
-                    'Use !settings for available options.'
-                )
+                await self.draft_invite_to_ban_setting()
             elif draft.get('ban_count') == 2:
                 draft.update({'status': 'major_pick'})
                 await self.send_message(
                     'All bans have been recorded.'
                 )
-                await self.send_message(
-                    f"{draft.get('current_selector')}, modify a major setting with !pick <setting> <value>."
-                )
-                await self.send_message(
-                    'Use !settings for of available options.'
-                )
+                major_pool = draft.get('available_settings').get('major')
+                await self.draft_invite_to_pick_setting('major', major_pool)
 
     async def ex_pick(self, args, message):
         """
@@ -490,7 +540,7 @@ class RandoHandler(RaceHandler):
             elif len(args) == 2 and args[0] in major_pool.keys():
                 if args[1] in major_pool.get(args[0]).keys():
                     await self.send_message(
-                        f'{args[0].capitalize()} will be set to: {args[1].capitalize()}'
+                        f'{self.friendly_names.setting(args[0])} will be set to: {self.friendly_names.option(args[0], args[1])}'
                     )
                     # Move setting keyword from available pool to picks pool. Add literal setting to data pool.
                     picks.update({args[0]: args[1]})
@@ -509,24 +559,14 @@ class RandoHandler(RaceHandler):
                     draft.update({
                         'status': 'minor_pick'
                     })
-                    await self.send_message(
-                        f"{draft.get('current_selector')}, modify a minor setting with !pick <setting> <value>."
-                    )
-                    await self.send_message(
-                        'Use !settings for available options.'
-                    )
+                    await self.draft_invite_to_pick_setting('minor', minor_pool)
                     return
                 # Change player turn post setting selection.
                 if reply_to == racer[0].get('name'):
                     draft.update({'current_selector': racer[1].get('name')})
                 elif reply_to == racer[1].get('name'):
                     draft.update({'current_selector': racer[0].get('name')})
-                await self.send_message(
-                    f"{draft.get('current_selector')}, modify a major setting with !pick <setting> <value>."
-                )
-                await self.send_message(
-                    'Use !settings for available options.'
-                )
+                await self.draft_invite_to_pick_setting('major', major_pool)
                 return
             # Handle invalid format and unknown arguments
             await self.send_message(
@@ -542,7 +582,7 @@ class RandoHandler(RaceHandler):
             elif len(args) == 2 and args[0] in minor_pool.keys():
                 if args[1] in minor_pool.get(args[0]).keys():
                     await self.send_message(
-                        f'{args[0].capitalize()} will be set to: {args[1].capitalize()}'
+                        f'{self.friendly_names.setting(args[0])} will be set to: {self.friendly_names.option(args[0], args[1])}'
                     )
                     # Move setting keyword from available pool to picks pool. Add literal setting to data pool.
                     picks.update({args[0]: args[1]})
@@ -574,12 +614,7 @@ class RandoHandler(RaceHandler):
                     draft.update({'current_selector': racer[1].get('name')})
                 elif reply_to == racer[1].get('name'):
                     draft.update({'current_selector': racer[0].get('name')})
-                await self.send_message(
-                    f"{draft.get('current_selector')}, modify a minor setting with !pick <setting> <value>."
-                )
-                await self.send_message(
-                    'Use !settings for available options.'
-                )
+                await self.draft_invite_to_pick_setting('minor', minor_pool)
                 return
             # Handle invalid format and unknown arguments.
             await self.send_message(
@@ -595,7 +630,7 @@ class RandoHandler(RaceHandler):
         draft = self.state.get('draft_data')
         if not draft.get('enabled'):
             return
-        
+
         major_pool = draft.get('available_settings').get('major')
         minor_pool = draft.get('available_settings').get('minor')
         combined_pool = {**major_pool, **minor_pool}
@@ -649,7 +684,9 @@ class RandoHandler(RaceHandler):
         elif draft.get('status') == 'complete':
             if len(args) == 0:
                 await self.send_message(
-                    'Picks for this race: ' + ', '.join(f"{key.capitalize()}: {value.capitalize()}" for key, value in picks.items()),
+                    'Picks for this race: ' + ', '.join(
+                        f"{self.friendly_names.setting(key)}: {self.friendly_names.option(key, value)}"
+                        for key, value in picks.items()),
                     pinned=True
                 )
                 await self.send_message(
@@ -660,7 +697,9 @@ class RandoHandler(RaceHandler):
                 })
         elif draft.get('status') == 'seed_rolled' and draft.get('auto_draft'):
             await self.send_message(
-                'Picks for this race: ' + ', '.join(f"{key.capitalize()}: {value.capitalize()}" for key, value in picks.items()),
+                'Picks for this race: ' + ', '.join(
+                    f"{self.friendly_names.setting(key)}: {self.friendly_names.option(key, value)}"
+                    for key, value in picks.items()),
                 pinned=True
             )
             await self.send_message(
@@ -674,7 +713,9 @@ class RandoHandler(RaceHandler):
         if draft.get('race_type') == 'qualifier':
             if datetime.datetime.now() - draft.get('rolled_at') > datetime.timedelta(minutes=10):
                 await self.send_message(
-                    'Picks for this race: ' + ', '.join(f"{key.capitalize()}: {value.capitalize()}" for key, value in picks.items()),
+                    'Picks for this race: ' + ', '.join(
+                        f"{self.friendly_names.setting(key)}: {self.friendly_names.option(key, value)}"
+                        for key, value in picks.items()),
                     pinned=True
                 )
                 await self.send_message(
@@ -858,7 +899,7 @@ class RandoHandler(RaceHandler):
                 reply_to=reply_to,
                 settings=self.patch_settings()
             )
-            return 
+            return
         await self.roll(
             preset=args[0] if args else 'weekly',
             encrypt=encrypt,
@@ -940,7 +981,7 @@ class RandoHandler(RaceHandler):
                 for place in placements:
                     if entrant.get('user').get('id') == place.get('id'):
                         entrants.append({'name': entrant.get('user').get('name'), 'rank': place.get('place')})
-            return sorted(entrants, key=lambda entrant: entrant.get('rank'))    
+            return sorted(entrants, key=lambda entrant: entrant.get('rank'))
         # Return list sorted by RaceTime points
         elif self.state.get('draft_data').get('race_type') == 'draft':
             for entrant in self.data.get('entrants'):
