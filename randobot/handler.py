@@ -390,7 +390,7 @@ class RandoHandler(RaceHandler):
             actions=[
                 msg_actions.Action(
                     label='Ban a setting',
-                    help_text='Pick a setting to ban from the list',
+                    help_text='Pick a setting to ban from the list.',
                     message='!ban ${setting}',
                     submit='Ban setting',
                     survey=msg_actions.Survey(
@@ -403,7 +403,7 @@ class RandoHandler(RaceHandler):
                 ),
                 msg_actions.Action(
                     label='Skip',
-                    help_text='Skip your ban phase and yield to the other player',
+                    help_text='Skip your ban phase and yield to the other player.',
                     message='!skip',
                 ),
             ]
@@ -637,10 +637,11 @@ class RandoHandler(RaceHandler):
                 await self.draft_pick_major_setting(reply_to, setting, option)
             elif len(args) == 2:
                 await self.draft_pick_major_setting(reply_to, args[0], args[1])
-            # Handle invalid format
-            await self.send_message(
-                'Invalid use of !pick command. Use !pick <setting> <option>.'
-            )
+            else:
+                # Handle invalid format
+                await self.send_message(
+                    'Invalid use of !pick command. Use !pick <setting> <option>.'
+                )
         elif reply_to == draft.get('current_selector') and draft.get('status') == 'minor_pick':
             # Handle selecting setting from different pool.
             if len(args) == 2 and args[0] in major_pool.keys():
@@ -654,10 +655,11 @@ class RandoHandler(RaceHandler):
                 await self.draft_pick_minor_setting(reply_to, setting, option)
             elif len(args) == 2:
                 await self.draft_pick_minor_setting(reply_to, args[0], args[1])
-            # Handle invalid format
-            await self.send_message(
-                'Invalid use of !pick command. Use !pick <setting> <option>.'
-            )
+            else:
+                # Handle invalid format
+                await self.send_message(
+                    'Invalid use of !pick command. Use !pick <setting> <option>.'
+                )
 
     async def ex_settings(self, args, message):
         """
