@@ -1001,8 +1001,8 @@ class RandoHandler(RaceHandler):
         preset.update(data)
 
         # If dungeon er is on, add logic_dc_scarecrow_gs to trick list
-        for key, value in data.items():
-            if key == 'shuffle_dungeon_entrances' and value == 'simple':
+        for setting in data.keys():
+            if setting == 'shuffle_dungeon_entrances' and data[setting] == 'simple':
                 preset['allowed_tricks'].append('logic_dc_scarecrow_gs')
 
         return preset
