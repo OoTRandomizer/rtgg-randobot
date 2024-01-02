@@ -1,4 +1,5 @@
 from asyncio import sleep
+from copy import deepcopy
 import datetime
 import re
 import random
@@ -990,7 +991,7 @@ class RandoHandler(RaceHandler):
 
     def patch_settings(self):
         settings = self.zsr.presets.get('s7').get('settings')
-        preset = {**settings}
+        preset = deepcopy(settings)
         picks = self.state.get('draft_data').get('drafted_settings').get('picks')
         data = self.state.get('draft_data').get('drafted_settings').get('data')
 
