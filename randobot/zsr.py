@@ -171,5 +171,590 @@ class ZSR:
         """
         Settings pool for Draft Mode.
         """
-        pool = requests.get(self.draft_settings_pool_endpoint).json()
-        return pool
+        # pool = requests.get(self.draft_settings_pool_endpoint).json()
+        # return pool
+        return {
+            "major": {
+                "bridge": {
+                    "__setting": "Rainbow Bridge",
+                    "default": "meds",
+                    "options": {
+                        "meds": {
+                            "name": "6 meds, No GCBK",
+                            "data": {
+                                "bridge": "medallions"   
+                            }
+                        },
+                        "open": {
+                            "name": "Open, 6 med GCBK",
+                            "data": {
+                                "bridge": "medallions",
+                                "shuffle_ganon_bosskey": "medallions"
+                            }
+                        }
+                    }
+                },
+                "deku": {
+                    "__setting": "Deku",
+                    "default": "closed",
+                    "options": {
+                        "closed": {
+                            "name": "Closed",
+                            "data": {
+                                "open_forest": "closed_deku"
+                            }
+                        },
+                        "open": {
+                            "name": "Open",
+                            "data": {
+                                "open_forest": "open"
+                            }
+                        }
+                    }
+                },
+                "interiors": {
+                    "__setting": "Interior ER",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "shuffle_interior_entrances": "off"
+                            }
+                        },
+                        "on": {
+                            "name": "On (all interiors)",
+                            "data": {
+                                "shuffle_interior_entrances": "all"
+                            }
+                        }
+                    }
+                },
+                "dungeons": {
+                    "__setting": "Dungeon ER",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "shuffle_dungeon_entrances": "off"
+                            }                    
+                        },
+                        "on": {
+                            "name": "Simple (excl. Ganon's Castle)",
+                            "data": {
+                                "shuffle_dungeon_entrances": "simple"
+                            }
+                        }
+                    }
+                },
+                "grottos": {
+                    "__setting": "Grotto ER",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "shuffle_grotto_entrances": False
+                            }
+                        },
+                        "on": {
+                            "name": "On",
+                            "data": {
+                                "shuffle_grotto_entrances": True
+                            }
+                        }
+                    }
+                },
+                "shops": {
+                    "__setting": "Shopsanity",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "shopsanity": "off"
+                            }
+                        },
+                        "on": {
+                            "name": "On (4)",
+                            "data": {
+                                "shopsanity": "4"
+                            }
+                        }
+                    }
+                },
+                "ow_tokens": {
+                    "__setting": "Overworld Tokens",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "tokensanity": "off"
+                            }
+                        },
+                        "on": {
+                            "name": "On",
+                            "data": {
+                                "tokensanity": "overworld"
+                            }
+                        }
+                    }
+                },
+                "dungeon_tokens": {
+                    "__setting": "Dungeon Tokens",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "tokensanity": "off"
+                            }
+                        },
+                        "on": {
+                            "name": "On",
+                            "data": {
+                                "tokensanity": "dungeons"
+                            }
+                        }
+                    }
+                },
+                "scrubs": {
+                    "__setting": "Scrub Shuffle",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "shuffle_scrubs": "off"
+                            }
+                        },
+                        "on": {
+                            "name": "On (affordable)",
+                            "data": {
+                                "shuffle_scrubs": "low"
+                            }
+                        }
+                    }
+                },
+                "keys": {
+                    "__setting": "Key Shuffle",
+                    "default": "own_dungeon",
+                    "options": {
+                        "own_dungeon": {
+                            "name": "Own Dungeon",
+                            "data": {
+                                "shuffle_smallkeys": "dungeon",
+                                "shuffle_bosskeys": "dungeon"
+                            }
+                        },
+                        "keysy": {
+                            "name": "Keysy (inc. BK)",
+                            "data": {
+                                "shuffle_smallkeys": "remove",
+                                "shuffle_bosskeys": "remove"
+                            }
+                        },
+                        "anywhere": {
+                            "name": "Keyrings Anywhere (inc. BK)",
+                            "data": {
+                                "shuffle_smallkeys": "keysanity",
+                                "key_rings_choice": "all",
+                                "keyring_give_bk": True
+                            }
+                        }
+                    }
+                },
+                "required_only": {
+                    "__setting": "Required Only (Beatable Only)",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "reachable_locations": "all"
+                            }
+                        },
+                        "on": {
+                            "name": "On",
+                            "data": {
+                                "reachable_locations": "beatable"
+                            }
+                        }
+                    }
+                },
+                "zora_fountain": {
+                    "__setting": "Zora Fountain",
+                    "default": "closed",
+                    "options": {
+                        "closed": {
+                            "name": "Closed",
+                            "data": {
+                                "zora_fountain": "closed"
+                            }
+                        },
+                        "open": {
+                            "name": "Open",
+                            "data": {
+                                "zora_fountain": "open"
+                            }
+                        }
+                    }
+                },
+                "cows": {
+                    "__setting": "Cow Shuffle",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "shuffle_cows": False
+                            }
+                        },
+                        "on": {
+                            "name": "On",
+                            "data": {
+                                "shuffle_cows": True
+                            }
+                        }
+                    }
+                },
+                "gerudo_card": {
+                    "__setting": "Shuffled Gerudo Card",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "shuffle_gerudo_card": False
+                            }
+                        },
+                        "on": {
+                            "name": "On",
+                            "data": {
+                                "shuffle_gerudo_card": True
+                            }
+                        }
+                    }
+                },
+                "trials": {
+                    "__setting": "Trials",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "trials": 0
+                            }
+                        },
+                        "on": {
+                            "name": "On (3 random)",
+                            "data": {
+                                "trials": 3
+                            }
+                        }
+                    }
+                }
+            },
+            "minor": {
+                "starting_age": {
+                    "__setting": "Starting Age",
+                    "default": "random",
+                    "options": {
+                        "random": {
+                            "name": "Random",
+                            "data": {
+                                "starting_age": "random"
+                            }
+                        },
+                        "child": {
+                            "name": "Child",
+                            "data": {
+                                "starting_age": "child"   
+                            }
+                        },
+                        "adult": {
+                            "name": "Adult",
+                            "data": {
+                                "starting_age": "adult"
+                            }
+                        }
+                    }
+                },
+                "random_spawns": {
+                    "__setting": "Random Spawns",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "spawn_positions": []
+                            }
+                        },
+                        "on": {
+                            "name": "On (both)",
+                            "data": {
+                                "spawn_positions": [
+                                    "child",
+                                    "adult"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "consumables": {
+                    "__setting": "Start with Consumables",
+                    "default": "on",
+                    "options": {
+                        "on": {
+                            "name": "On",
+                            "data": {
+                                "start_with_consumables": True
+                            }
+                        },
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "start_with_consumables": False
+                            }
+                        }
+                    }
+                },
+                "rupees": {
+                    "__setting": "Start with Rupees",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "start_with_rupees": False
+                            }
+                        },
+                        "on": {
+                            "name": "On",
+                            "data": {
+                                "start_with_rupees": True
+                            }
+                        }
+                    }
+                },
+                "cuccos": {
+                    "__setting": "Chicken Count",
+                    "default": "7",
+                    "options": {
+                        "7": {
+                            "name": "7",
+                            "data": {
+                                "chicken_count": 7
+                            }
+                        },
+                        "1": {
+                            "name": "1",
+                            "data": {
+                                "chicken_count": 1
+                            }
+                        }
+                    }
+                },
+                "free_scarecrow": {
+                    "__setting": "Free Scarecrow",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "free_scarecrow": False
+                            }
+                        },
+                        "on": {
+                            "name": "On",
+                            "data": {
+                                "free_scarecrow": True
+                            }
+                        }
+                    }
+                },
+                "camc": {
+                    "__setting": "Chest Appearance Matches Contents",
+                    "default": "on",
+                    "options": {
+                        "on": {
+                            "name": "On (Size and Texture)",
+                            "data": {
+                                "correct_chest_appearances": "both"
+                            }
+                        },
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "correct_chest_appearances": "off"   
+                            }
+                        }
+                    }
+                },
+                "mask_quest": {
+                    "__setting": "Completed Mask Quest",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "complete_mask_quest": False
+                            }
+                        },
+                        "on": {
+                            "name": "On (w/ slow Bunny Hood)",
+                            "data": {
+                                "complete_mask_quest": True,
+                                "fast_bunny_hood": False
+                            }
+                        }
+                    }
+                },
+                "bfa": {
+                    "__setting": "Blue Fire Arrows",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "blue_fire_arrows": False
+                            }
+                        },
+                        "on": {
+                            "name": "On",
+                            "data": {
+                                "blue_fire_arrows": True
+                            }
+                        }
+                    }
+                },
+                "owls": {
+                    "__setting": "Random Owl Drops",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "owl_drops": False
+                            }
+                        },
+                        "on": {
+                            "name": "On",
+                            "data": {
+                                "owl_drops": True
+                            }
+                        }
+                    }
+                },
+                "song_warps": {
+                    "__setting": "Random Song Warps",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "warp_songs": False
+                            }
+                        },
+                        "on": {
+                            "name": "On",
+                            "data": {
+                                "warp_songs": True
+                            }
+                        }
+                    }
+                },
+                "shuffle_beans": {
+                    "__setting": "Shuffled Magic Beans",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "shuffle_beans": False
+                            }
+                        },
+                        "on": {
+                            "name": "On",
+                            "data": {
+                                "shuffle_beans": True
+                            }
+                        }
+                    }
+                },
+                "expensive_merchants": {
+                    "__setting": "Expensive Merchants",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "shuffle_expensive_merchants": False
+                            }
+                        },
+                        "on": {
+                            "name": "On",
+                            "data": {
+                                "shuffle_expensive_merchants": True
+                            }
+                        }
+                    }
+                },
+                "beans_planted": {
+                    "__setting": "Planted Magic Beans",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "On",
+                            "data": {
+                                "plant_beans": False
+                            }
+                        },
+                        "on": {
+                            "name": "Off",
+                            "data": {
+                                "plant_beans": True
+                            }
+                        }
+                    }
+                },
+                "door_of_time": {
+                    "__setting": "Door of Time",
+                    "default": "open",
+                    "options": {
+                        "open": {
+                            "name": "Open",
+                            "data": {
+                                "open_door_of_time": True
+                            }
+                        },
+                        "closed": {
+                            "name": "Closed",
+                            "data": {
+                                "open_door_of_time": False
+                            }
+                        }
+                    }
+                },
+                "chus_in_logic": {
+                    "__setting": "Bombchus in Logic",
+                    "default": "off",
+                    "options": {
+                        "off": {
+                            "name": "Off",
+                            "data": {
+                                "free_bombchu_drops": False
+                            }
+                        },
+                        "on": {
+                            "name": "On (adds Bombchu Bag)",
+                            "data": {
+                                "free_bombchu_drops": True
+                            }
+                        }
+                    }
+                }
+            }
+}
