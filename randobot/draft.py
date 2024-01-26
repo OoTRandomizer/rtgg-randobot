@@ -47,11 +47,10 @@ class PlayerDraft(Handler):
         _draftees = []
         # Sort by qualifier placement
         if self.is_tournament_race:
-            placements = qual_data
             for draftee in self.draftees:
-                for place in placements:
-                    if draftee == place['name'].lower():
-                        _draftees.append({'name': draftee, 'place': place['place']})
+                for racer in qual_data:
+                    if draftee == racer['name'].lower():
+                        _draftees.append({'name': draftee, 'place': racer['place']})
             self.draftees = sorted(_draftees, key=lambda draftee: draftee['place'])
         # Sort by racetime.gg points
         else:
