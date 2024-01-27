@@ -102,7 +102,7 @@ class ZSR:
             return latest_dev_version, True
         return latest_dev_version, False
 
-    def roll_seed(self, preset, encrypt, dev, settings, race_type):
+    def roll_seed(self, preset, encrypt, dev, settings):
         """
         Generate a seed and return its public URL.
         """
@@ -131,8 +131,6 @@ class ZSR:
             params['encrypt'] = 'true'
         if encrypt and dev:
             params['locked'] = 'true'
-        if race_type == 'qualifier':
-            params['hideSettings'] = 'true'
         if dev:
             params['version'] = 'dev_' + latest_dev_version
         data = requests.post(self.seed_endpoint, req_body, params=params,
@@ -180,13 +178,13 @@ class ZSR:
                     "default": "meds",
                     "options": {
                         "meds": {
-                            "name": "6 meds, No GCBK",
+                            "name": "6 meds - No GCBK",
                             "data": {
                                 "bridge": "medallions"   
                             }
                         },
                         "open": {
-                            "name": "Open, 6 med GCBK",
+                            "name": "Open - 6 med GCBK",
                             "data": {
                                 "bridge": "medallions",
                                 "shuffle_ganon_bosskey": "medallions"
@@ -707,13 +705,13 @@ class ZSR:
                     "default": "off",
                     "options": {
                         "off": {
-                            "name": "On",
+                            "name": "Off",
                             "data": {
                                 "plant_beans": False
                             }
                         },
                         "on": {
-                            "name": "Off",
+                            "name": "On",
                             "data": {
                                 "plant_beans": True
                             }
@@ -757,4 +755,4 @@ class ZSR:
                     }
                 }
             }
-}
+        }

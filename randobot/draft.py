@@ -1,3 +1,4 @@
+import json
 import random
 from copy import deepcopy
 
@@ -5,28 +6,28 @@ class Handler:
     """
     Base class for handling draft data
     """
-    def __init__(self, settings_pool):
-        self.major_settings_pool = settings_pool['major']
-        self.minor_settings_pool = settings_pool['minor']
+    def __init__(self, setting_pool):
+        self.settings_pool = setting_pool
         self.generator_data = {}
 
-    def handle_conditional_settings(self):
-        settings = self.zsr.presets.get('s7').get('settings')
-        preset = deepcopy(settings)
-        picks = self.state.get('draft_data').get('drafted_settings').get('picks')
-        data = self.state.get('draft_data').get('drafted_settings').get('data')
+    def handle_conditional_settings(self, selections, preset):
+        patched_settings = deepcopy(preset)
+        _data = self.generator_data
 
         # Handled seperated tokensanity settings
-        if 'ow_tokens' in picks.keys() and 'dungeon_tokens' in picks.keys():
-            data.update({'tokensanity': 'all'})
+        if 'Overworld Tokens' in selections and 'Dungeon Tokens' in selections:
+            _data.update({'tokensanity': 'all'})
 
-        preset.update(data)
+        patched_settings.update(_data)
 
         # If dungeon er is on, add logic_dc_scarecrow_gs to trick list
-        for setting in data.keys():
-            if setting == 'shuffle_dungeon_entrances' and data[setting] == 'simple':
-                preset['allowed_tricks'].append('logic_dc_scarecrow_gs')
-        return preset
+        for setting in _data:
+            if setting == 'shuffle_dungeon_entrances' and _data[setting] == 'simple':
+                patched_settings['allowed_tricks'].append('logic_dc_scarecrow_gs')
+        return patched_settings
+    
+    def zsr_send_data(self):
+        pass
     
 class PlayerDraft(Handler):
     """
@@ -34,10 +35,7 @@ class PlayerDraft(Handler):
     """
     def __init__(self, entrants, settings_pool, config, qual_data):
         super().__init__(settings_pool)
-        _, *self.draftees, self.is_tournament_race, self.max_bans, self.max_picks = config
-        self.complete_settings_pool = self.major_settings_pool | self.minor_settings_pool
-        self.ban_count = 0
-        self.pick_count = 0
+        self.race_type, *self.draftees, self.is_tournament_race, self.bans_each, self.major_picks_each, self.minor_picks_each = config
         self.player_bans = {}
         self.player_picks = {}
         self.current_selector = None
@@ -60,7 +58,7 @@ class PlayerDraft(Handler):
                         _draftees.append({'name': draftee, 'score': entrant['score'] if entrant.get('score') else 0})
             self.draftees = sorted(_draftees, key=lambda draftee: draftee['score'], reverse=True)
 
-    def assign_draft_order(self, reply_to):
+    def assign_draft_order(self):
         pass
 
     def skip_ban(self):
@@ -81,28 +79,31 @@ class RandomDraft(Handler):
     """
     def __init__(self, settings_pool, config):
         super().__init__(settings_pool)
-        _, self.is_tournament_race, self.num_settings = config
+        self.race_type, self.num_major_settings, self.num_minor_settings = config
         self.selected_settings = {}
 
     def select_random_settings(self):
-        _num_settings = int(self.num_settings)
-        _generator_data = deepcopy(self.generator_data)
+        _num_major_settings = int(self.num_major_settings)
+        _num_minor_settings = int(self.num_minor_settings)
         count = 0
-        while count < _num_settings:
+        while count < _num_major_settings + _num_minor_settings:
             # Select from major pool
-            if count < (_num_settings / 2):
-                pool = deepcopy(self.major_settings_pool)
+            if count < _num_major_settings:
+                pool = self.settings_pool['major']
             # Select from minor pool
             else:
-                pool = deepcopy(self.minor_settings_pool)
-            name = random.choice(list(pool))
-            setting = random.choice(list(pool[name]))
-            for key, value in pool[name][setting].items():
-                _generator_data.update({
+                pool = self.settings_pool['minor']
+            setting = random.choice(list(pool))
+            option = random.choice(list(pool[setting]['options']))
+            if option == pool[setting]['default']:
+                continue
+            for key, value in pool[setting]['options'][option]['data'].items():
+                self.generator_data.update({
                     key: value
                 })
-            pool.pop(name)
             self.selected_settings.update({
-                name: setting
+                pool[setting]['__setting']: pool[setting]['options'][option]['name']
             })
+            pool.pop(setting)
             count += 1
+            

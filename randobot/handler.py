@@ -208,19 +208,25 @@ class RandoHandler(RaceHandler):
                                 label='Configure draft',
                                 help_text='Configure draft settings',
                                 submit='Confirm',
-                                message='!config draft ${draftees} ${is_tournament_race} ${total_bans} ${total_picks}',
+                                message='!config draft ${draftees} ${is_tournament_race} ${bans_each} ${major_picks_each} ${minor_picks_each}',
                                 survey=msg_actions.Survey(
                                     msg_actions.SelectInput(
-                                        name='total_bans',
-                                        label='Total bans',
-                                        options={'2': '2', '4': '4', '6': '6'},
-                                        default='2'
+                                        name='bans_each',
+                                        label='# Bans each',
+                                        options={'1': '1', '2': '2', '3': '3'},
+                                        default='1'
                                     ),
                                     msg_actions.SelectInput(
-                                        name='total_picks',
-                                        label='Total picks',
-                                        options={'2': '2', '4': '4', '6': '6'},
-                                        default='4'
+                                        name='major_picks_each',
+                                        label='# Major picks each',
+                                        options={'1': '1', '2': '2', '3': '3'},
+                                        default='1'
+                                    ),
+                                    msg_actions.SelectInput(
+                                        name='minor_picks_each',
+                                        label='# Minor picks each',
+                                        options={'1': '1', '2': '2', '3': '3'},
+                                        default='1'
                                     ),
                                     msg_actions.BoolInput(
                                         name='is_tournament_race',
@@ -247,17 +253,19 @@ class RandoHandler(RaceHandler):
                                 label='Configure seed',
                                 help_text='Configure seed settings',
                                 submit='Confirm',
-                                message='!config random ${is_tournament_race} ${total_settings}',
+                                message='!config random ${num_major_settings} ${num_minor_settings}',
                                 survey=msg_actions.Survey(
                                     msg_actions.SelectInput(
-                                        name='total_settings',
-                                        label='Total # of random settings',
-                                        options={'2': '2', '4': '4', '6': '6'},
-                                        default='4'
+                                        name='num_major_settings',
+                                        label='# Of random major settings',
+                                        options={'1': '1', '2': '2', '3': '3'},
+                                        default='2'
                                     ),
-                                    msg_actions.BoolInput(
-                                        name='is_tournament_race',
-                                        label='Qualifier race'
+                                    msg_actions.SelectInput(
+                                        name='num_minor_settings',
+                                        label='# Of random minor settings',
+                                        options={'1': '1', '2': '2', '3': '3'},
+                                        default='2'
                                     )
                                 )
                             ),
@@ -294,10 +302,11 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress() or len(args) == 0 or self.state['draft_status'] != 'setup':
             return
-        if not await self.logic_draft_instance(args):
+        if not await self.verify_args(args):
             return
         if args[0] == 'draft':
             self.state['draft_data'] = PlayerDraft(self.data['entrants'], self.zsr.load_available_settings(), args, self.zsr.load_qualifier_placements())
+            self.state['draft_status'] = 'drafting_order'
             if self.state['draft_data'].is_tournament_race:
                 await self.ex_fpa(['on'], message)
             await self.send_message(
@@ -319,7 +328,20 @@ class RandoHandler(RaceHandler):
             )
         elif args[0] == 'random':
             self.state['draft_data'] = RandomDraft(self.zsr.load_available_settings(), args)
-        self.state['draft_status'] = 'drafting_order'
+            self.state['draft_status'] = 'awaiting_seed'
+            await self.send_message(
+                'Use the button below 15 minutes prior to race start for a seed.',
+                actions=[
+                    msg_actions.Action(
+                        label='Roll seed',
+                        message='!seed',
+                    ),
+                    msg_actions.Action(
+                        label='Cancel draft',
+                        message='!draft cancel'
+                    )
+                ]
+            )
 
     async def ex_first(self, args, message):
         """
@@ -761,10 +783,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state.get('draft_data').get('enabled'):
-            await self.send_message(
-                'Sorry, this command is disabled for Draft Mode.'
-            )
+        elif self.state['draft_status'] is not None:
             return
         await self.roll_and_send(args, message, encrypt=True, dev=True)
 
@@ -774,10 +793,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state.get('draft_data').get('enabled'):
-            await self.send_message(
-                'Sorry, this command is disabled for Draft Mode.'
-            )
+        elif self.state['draft_status'] is not None:
             return
         await self.roll_and_send(args, message, encrypt=False, dev=False)
 
@@ -787,10 +803,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state.get('draft_data').get('enabled'):
-            await self.send_message(
-                'Sorry, this command is disabled for Draft Mode.'
-            )
+        elif self.state['draft_status'] is not None:
             return
         await self.send_presets(False)
 
@@ -800,10 +813,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        elif self.state.get('draft_data').get('enabled'):
-            await self.send_message(
-                'Sorry, this command is disabled for Draft Mode.'
-            )
+        elif self.state['draft_status'] is not None:
             return
         await self.send_presets(True)
 
@@ -848,7 +858,6 @@ class RandoHandler(RaceHandler):
         valid.
         """
         reply_to = message.get('user', {}).get('name')
-        draft = self.state.get('draft_data')
 
         if self.state.get('locked') and not can_monitor(message):
             await self.send_message(
@@ -863,28 +872,27 @@ class RandoHandler(RaceHandler):
                 'Don\'t get greedy!'
             )
             return
-        if draft.get('enabled'):
-            if draft.get('race_type') == 'qualifier' or draft.get('auto_draft'):
-                if draft.get('race_type') == 'qualifier':
-                    draft.update({'rolled_at': datetime.datetime.now()})
-                await self.handle_random_seed(encrypt, dev, reply_to)
-                return
-            else:
-                if draft.get('status') != 'complete':
-                    await self.send_message(
-                        f'Sorry {reply_to}, drafting must be completed before rolling the seed.'
-                    )
-                    return
-            if draft.get('race_type') in ('draft', 'random', 'tournament'):
-                await self.ex_settings('', '')
+        if self.state['draft_status'] == 'awaiting_seed':
+            data = self.state['draft_data']
+            if data.race_type == 'random':
+                data.select_random_settings()
             await self.roll(
                 preset=None,
                 encrypt=encrypt,
                 dev=dev,
                 reply_to=reply_to,
-                settings=self.patch_settings()
+                settings=data.handle_conditional_settings(data.selected_settings, self.zsr.presets['s7']['settings'])
             )
-            return 
+            await self.send_message(
+                'The following changes have been selected: ' +
+                ' | '.join(f"{name}: {setting}" for name, setting in data.selected_settings.items()),
+                pinned=True
+            )
+            await self.send_message(
+                '@entrants - Settings changes are pinned above.'
+            )
+            self.state['draft_status'] = 'complete'
+            return
         await self.roll(
             preset=args[0] if args else 'weekly',
             encrypt=encrypt,
@@ -896,7 +904,7 @@ class RandoHandler(RaceHandler):
         """
         Generate a seed and send it to the race room.
         """
-        if not self.state.get('draft_data').get('enabled'):
+        if self.state['draft_status'] is None:
             if (dev and preset not in self.zsr.presets_dev) or (not dev and preset not in self.zsr.presets):
                 res_cmd = '!presetsdev' if dev else '!presets'
                 await self.send_message(
@@ -906,7 +914,7 @@ class RandoHandler(RaceHandler):
                 )
                 return
 
-        seed_id, seed_uri = self.zsr.roll_seed(preset, encrypt, dev, settings, self.state.get('draft_data').get('race_type'))
+        seed_id, seed_uri = self.zsr.roll_seed(preset, encrypt, dev, settings)
 
         await self.send_message(
             '%(reply_to)s, here is your seed: %(seed_uri)s'
@@ -957,46 +965,29 @@ class RandoHandler(RaceHandler):
             for name, preset in self.zsr.presets.items():
                 await self.send_message('%s – %s' % (name, preset['full_name']))
 
-    async def logic_draft_instance(self, args):
+    async def verify_args(self, args):
         if args[0] == 'draft':
             if len(args) < 6:
                 await self.send_message(
                     'Invalid syntax. Use the buttons for assistance.'
                 )
                 return False
-            _, *draftees, is_tournament_race, max_bans, max_picks = args
+            _, *draftees, _, _, _, _ = args
             for entrant in self.data['entrants']:
                 if entrant['user']['name'].lower() not in draftees:
                     await self.send_message(
                         'One or more supplied draftees are not in the room.'
                     )
                     return False
-            if is_tournament_race:
-                if max_bans != '2' or max_picks != '4':
-                    await self.send_message(
-                        'Draftees may only ban 2 settings and pick 4 settings for tournament races.'
-                    )
-                    return False
-                elif len(draftees) != 2:
-                    await self.send_message(
-                        'Only 2 draftees may participate in tournament races.'
-                    )
-                    return False
             if len(draftees) < 2:
                 await self.send_message(
-                    'At least 2 draftees must be selected to draft settings.'
+                    'At least 2 draftees must be selected before continuing.'
                 )
                 return False
         elif args[0] == 'random':
             if len(args) != 3:
                 await self.send_message(
                     'Invalid syntax. Use the buttons for assistance.'
-                )
-                return False
-            _, is_tournament_race, num_settings = args
-            if is_tournament_race and num_settings != '2':
-                await self.send_message(
-                    'Only 2 settings may be changed in tournament races'
                 )
                 return False
         return True
