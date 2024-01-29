@@ -1,4 +1,3 @@
-import json
 import random
 from copy import deepcopy
 
@@ -6,8 +5,8 @@ class Handler:
     """
     Base class for handling draft data
     """
-    def __init__(self, setting_pool):
-        self.settings_pool = setting_pool
+    def __init__(self, settings_pool):
+        self.settings_pool = settings_pool
         self.generator_data = {}
 
     def handle_conditional_settings(self, selections, preset):
@@ -25,9 +24,6 @@ class Handler:
             if setting == 'shuffle_dungeon_entrances' and _data[setting] == 'simple':
                 patched_settings['allowed_tricks'].append('logic_dc_scarecrow_gs')
         return patched_settings
-    
-    def zsr_send_data(self):
-        pass
     
 class PlayerDraft(Handler):
     """
@@ -58,8 +54,17 @@ class PlayerDraft(Handler):
                         _draftees.append({'name': draftee, 'score': entrant['score'] if entrant.get('score') else 0})
             self.draftees = sorted(_draftees, key=lambda draftee: draftee['score'], reverse=True)
 
-    def assign_draft_order(self):
-        pass
+    def assign_draft_order(self, message, config):
+        if len(self.draftees) == 2:
+            user = message.get('user', {}).get('name')
+            if user == self.draftees[0]['name']:
+                if message.get('message_plain', '') == '!first':
+                    self.current_selector = self.draftees[0]['name']
+                elif message.get('message_plain', '') == '!second':
+                    self.current_selector = self.draftees[1]['name']
+            return
+        self.draftees = config
+        self.current_selector = self.draftees[0]
 
     def skip_ban(self):
         pass
@@ -71,7 +76,11 @@ class PlayerDraft(Handler):
         pass
 
     def send_available_settings(self):
-        pass
+        pool = self.settings_pool
+        return {
+            setting: f"{pool[setting]['__setting']}: {pool[setting]['options'][pool[setting]['default']]['name']}"
+            for setting in pool
+        }
 
 class RandomDraft(Handler):
     """

@@ -283,7 +283,8 @@ class RandoHandler(RaceHandler):
                                 'Only a race moderator can cancel the draft once the seed is rolled.'
                             )
                             return
-                        await self.ex_fpa(['off'], message)
+                        if self.state.get('fpa') == True:
+                            await self.ex_fpa(['off'], message)
                         del self.state['draft_data']
                     await self.pin_message(self.state['pinned_msg'])
                     await self.send_message(
@@ -300,25 +301,48 @@ class RandoHandler(RaceHandler):
         """
         Helper function for !draft
         """
-        if self._race_in_progress() or len(args) == 0 or self.state.get('draft_status') != 'setup':
+        if self._race_in_progress() or len(args) == 0:
             return
         if not await self.verify_args(args):
             return
-        if args[0] == 'draft':
+        if args[0] == 'draft' and self.state.get('draft_status') == 'setup':
             self.state['draft_data'] = PlayerDraft(self.data['entrants'], self.zsr.load_available_settings(), args, self.zsr.load_qualifier_placements())
-            self.state['draft_status'] = 'drafting_order'
+            self.state['draft_status'] = 'draft_order'
             if self.state.get('draft_data').is_tournament_race:
                 await self.ex_fpa(['on'], message)
+            if len(self.state.get('draft_data').draftees) == 2:
+                await self.send_message(
+                    f"@{self.state['draft_data'].draftees[0]['name'].capitalize()}, would you like to go first or second?",
+                    actions=[
+                        msg_actions.Action(
+                            label='First',
+                            message='!first'
+                        ),
+                        msg_actions.Action(
+                            label='Second',
+                            message='!second'
+                        ),
+                        msg_actions.Action(
+                            label='Cancel draft',
+                            message='!draft cancel'
+                        )
+                    ]
+                )
+                return
             await self.send_message(
-                f"@{self.state['draft_data'].draftees[0]['name'].capitalize()}, would you like to ban first or second?",
+                'Use the buttons below to determine the drafting order.',
                 actions=[
                     msg_actions.Action(
-                        label='First',
-                        message='!first'
-                    ),
-                    msg_actions.Action(
-                        label='Second',
-                        message='!second'
+                        label='Assign draft order',
+                        message='!config order ${draft_order}',
+                        submit='Confirm',
+                        survey=msg_actions.Survey(
+                            msg_actions.TextInput(
+                                name='draft_order',
+                                label='Draft order (Name: first -> last)',
+                                placeholder='ex. First Second Third'
+                            )
+                        )
                     ),
                     msg_actions.Action(
                         label='Cancel draft',
@@ -326,7 +350,7 @@ class RandoHandler(RaceHandler):
                     )
                 ]
             )
-        elif args[0] == 'random':
+        elif args[0] == 'random' and self.state.get('draft_status') == 'setup':
             self.state['draft_data'] = RandomDraft(self.zsr.load_available_settings(), args)
             self.state['draft_status'] = 'awaiting_seed'
             await self.send_message(
@@ -346,6 +370,9 @@ class RandoHandler(RaceHandler):
                     )
                 ]
             )
+        elif args[0] == 'order' and self.state.get('draft_status') == 'draft_order':
+            if len(self.state.get('draft_data').draftees) > 2:
+                self.state['draft_data'].assign_draft_order(None, args)
 
     async def ex_first(self, args, message):
         """
@@ -353,8 +380,31 @@ class RandoHandler(RaceHandler):
 
         Allow higher-seeded player to pick first.
         """
-        if self._race_in_progress() or self.state.get('draft_status') != 'draft_order':
+        if self._race_in_progress() or self.state.get('draft_status') != 'draft_order' or len(self.state.get('draft_data').draftees) > 2:
             return
+        self.state['draft_data'].assign_draft_order(message, None)
+        self.state['draft_status'] = 'player_bans'
+        await self.send_message(
+            f"@{self.state['draft_data'].current_selector}, Use the buttons below to lock in a setting.",
+            actions=[
+                msg_actions.Action(
+                    label='Ban setting',
+                    message='!ban ${setting}',
+                    submit='Confirm',
+                    survey=msg_actions.Survey(
+                        msg_actions.SelectInput(
+                            name='setting',
+                            label='Setting to ban',
+                            options=self.state['draft_data'].send_available_settings()
+                        )
+                    )
+                ),
+                msg_actions.Action(
+                    label='Cancel draft',
+                    message='!draft cancel'
+                )
+            ]
+        )
 
     async def ex_second(self, args, message):
         """
@@ -362,26 +412,9 @@ class RandoHandler(RaceHandler):
 
         Allow higher-seeded player to pick second.
         """
-        if self._race_in_progress() or self.state.get('draft_status') != 'draft_order':
+        if self._race_in_progress() or self.state.get('draft_status') != 'draft_order' or len(self.state.get('draft_data').draftees) > 2:
             return
-        
-        # reply_to = message.get('user', {}).get('name')
-        # racer = draft.get('racers')
-
-        # # Compare sender to draft_data 
-        # if racer[0].get('name') != reply_to:
-        #     return
-        # draft.update({'current_selector': racer[1].get('name')})
-        # await self.send_message(
-        #     f"{draft.get('current_selector')}, remove a setting with !ban <setting>."
-        # )
-        # await self.send_message(
-        #     'Use !settings for available options.'
-        # )
-        # await self.send_message(
-        #     'Use !skip to avoid removing a setting.'
-        # )
-        # draft.update({'status': 'ban'})
+        self.state['draft_data'].assign_draft_order(message, None)
             
     async def ex_ban(self, args, message):
         """

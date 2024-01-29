@@ -283,7 +283,7 @@ class ZSR:
                     }
                 },
                 "ow_tokens": {
-                    "__setting": "Overworld Tokens",
+                    "__setting": "Overworld Token Shuffle",
                     "default": "off",
                     "options": {
                         "off": {
@@ -301,7 +301,7 @@ class ZSR:
                     }
                 },
                 "dungeon_tokens": {
-                    "__setting": "Dungeon Tokens",
+                    "__setting": "Dungeon Token Shuffle",
                     "default": "off",
                     "options": {
                         "off": {
@@ -520,7 +520,7 @@ class ZSR:
                     }
                 },
                 "rupees": {
-                    "__setting": "Start with Rupees",
+                    "__setting": "Start with Max Rupees",
                     "default": "off",
                     "options": {
                         "off": {
@@ -530,7 +530,7 @@ class ZSR:
                             }
                         },
                         "on": {
-                            "name": "On",
+                            "name": "On (fills wallet on upgrade)",
                             "data": {
                                 "start_with_rupees": True
                             }
@@ -538,7 +538,7 @@ class ZSR:
                     }
                 },
                 "cuccos": {
-                    "__setting": "Chicken Count",
+                    "__setting": "Anju's Chicken Count",
                     "default": "7",
                     "options": {
                         "7": {
@@ -701,7 +701,7 @@ class ZSR:
                     }
                 },
                 "beans_planted": {
-                    "__setting": "Planted Magic Beans",
+                    "__setting": "Magic Beans Planted",
                     "default": "off",
                     "options": {
                         "off": {
