@@ -193,108 +193,109 @@ class RandoHandler(RaceHandler):
                 'At least two entrants must be present before beginning a draft.'
             )
             return
-        if len(args) == 1:
-            if args[0] in ('normal', 'random') and not self.state.get('draft_data'):
-                self.state['draft_status'] = 'setup'
+        if args[0] in ('normal', 'random') and not self.state.get('draft_data'):
+            self.state['draft_status'] = 'setup'
+            if self.state.get('pinned_msg'):
                 await self.unpin_message(self.state['pinned_msg'])
+            await self.send_message(
+                'Welcome to OoTR Draft Mode!'
+            )
+            if args[0] == 'normal':
                 await self.send_message(
-                    'Welcome to OoTR Draft Mode!'
+                    'Configure the draft settings with the buttons below.',
+                    actions=[
+                        msg_actions.Action(
+                            label='Configure draft',
+                            help_text='Configure draft settings',
+                            submit='Confirm',
+                            message='!config draft ${draftees} ${is_tournament_race} ${bans_each} ${major_picks_each} ${minor_picks_each}',
+                            survey=msg_actions.Survey(
+                                msg_actions.SelectInput(
+                                    name='bans_each',
+                                    label='# Bans each',
+                                    options={'1': '1', '2': '2', '3': '3'},
+                                    default='1'
+                                ),
+                                msg_actions.SelectInput(
+                                    name='major_picks_each',
+                                    label='# Major picks each',
+                                    options={'1': '1', '2': '2', '3': '3'},
+                                    default='1'
+                                ),
+                                msg_actions.SelectInput(
+                                    name='minor_picks_each',
+                                    label='# Minor picks each',
+                                    options={'1': '1', '2': '2', '3': '3'},
+                                    default='1'
+                                ),
+                                msg_actions.BoolInput(
+                                    name='is_tournament_race',
+                                    label='Tournament race'
+                                ),
+                                msg_actions.TextInput(
+                                    name='draftees',
+                                    label='Draftees (case-insensitive)',
+                                    placeholder='ex: Player1 Player2 Player3'
+                                )
+                            )
+                        ),
+                        msg_actions.Action(
+                            label='Cancel draft',
+                            message='!draft cancel',
+                        )
+                    ]
                 )
-                if args[0] == 'normal':
-                    await self.send_message(
-                        'Configure the draft settings with the buttons below.',
-                        actions=[
-                            msg_actions.Action(
-                                label='Configure draft',
-                                help_text='Configure draft settings',
-                                submit='Confirm',
-                                message='!config draft ${draftees} ${is_tournament_race} ${bans_each} ${major_picks_each} ${minor_picks_each}',
-                                survey=msg_actions.Survey(
-                                    msg_actions.SelectInput(
-                                        name='bans_each',
-                                        label='# Bans each',
-                                        options={'1': '1', '2': '2', '3': '3'},
-                                        default='1'
-                                    ),
-                                    msg_actions.SelectInput(
-                                        name='major_picks_each',
-                                        label='# Major picks each',
-                                        options={'1': '1', '2': '2', '3': '3'},
-                                        default='1'
-                                    ),
-                                    msg_actions.SelectInput(
-                                        name='minor_picks_each',
-                                        label='# Minor picks each',
-                                        options={'1': '1', '2': '2', '3': '3'},
-                                        default='1'
-                                    ),
-                                    msg_actions.BoolInput(
-                                        name='is_tournament_race',
-                                        label='Tournament race'
-                                    ),
-                                    msg_actions.TextInput(
-                                        name='draftees',
-                                        label='Draftees (separated with a space)',
-                                        placeholder='ex: Player1 Player2 Player3'
-                                    )
+            elif args[0] == 'random':
+                await self.send_message(
+                    'Configure the amount of settings to change with the buttons below.',
+                    actions=[
+                        msg_actions.Action(
+                            label='Configure seed',
+                            help_text='Configure seed settings',
+                            submit='Confirm',
+                            message='!config random ${num_major_settings} ${num_minor_settings}',
+                            survey=msg_actions.Survey(
+                                msg_actions.SelectInput(
+                                    name='num_major_settings',
+                                    label='# Of random major settings',
+                                    options={'1': '1', '2': '2', '3': '3'},
+                                    default='2'
+                                ),
+                                msg_actions.SelectInput(
+                                    name='num_minor_settings',
+                                    label='# Of random minor settings',
+                                    options={'1': '1', '2': '2', '3': '3'},
+                                    default='2'
                                 )
-                            ),
-                            msg_actions.Action(
-                                label='Cancel draft',
-                                message='!draft cancel',
                             )
-                        ]
-                    )
-                elif args[0] == 'random':
-                    await self.send_message(
-                        'Configure the amount of settings to change with the buttons below.',
-                        actions=[
-                            msg_actions.Action(
-                                label='Configure seed',
-                                help_text='Configure seed settings',
-                                submit='Confirm',
-                                message='!config random ${num_major_settings} ${num_minor_settings}',
-                                survey=msg_actions.Survey(
-                                    msg_actions.SelectInput(
-                                        name='num_major_settings',
-                                        label='# Of random major settings',
-                                        options={'1': '1', '2': '2', '3': '3'},
-                                        default='2'
-                                    ),
-                                    msg_actions.SelectInput(
-                                        name='num_minor_settings',
-                                        label='# Of random minor settings',
-                                        options={'1': '1', '2': '2', '3': '3'},
-                                        default='2'
-                                    )
-                                )
-                            ),
-                            msg_actions.Action(
-                                label='Cancel draft',
-                                message='!draft cancel',
-                            )
-                        ]
-                    )
-            elif args[0] == 'cancel':
-                if self.state.get('draft_status') is not None:
-                    if self.state.get('draft_data'):
-                        if self.state.get('seed_id') and not can_moderate(message):
-                            await self.send_message(
-                                'Only a race moderator can cancel the draft once the seed is rolled.'
-                            )
-                            return
-                        if self.state.get('fpa') == True:
-                            await self.ex_fpa(['off'], message)
-                        del self.state['draft_data']
+                        ),
+                        msg_actions.Action(
+                            label='Cancel draft',
+                            message='!draft cancel',
+                        )
+                    ]
+                )
+        elif args[0] == 'cancel':
+            if self.state.get('draft_status') is not None:
+                if self.state.get('draft_data'):
+                    if self.state.get('seed_id') and not can_moderate(message):
+                        await self.send_message(
+                            'Only a race moderator can cancel the draft once the seed is rolled.'
+                        )
+                        return
+                    if self.state.get('fpa') == True:
+                        await self.ex_fpa(['off'], message)
+                    del self.state['draft_data']
+                if self.state.get('pinned_msg'):
                     await self.pin_message(self.state['pinned_msg'])
-                    await self.send_message(
-                        'The draft has been canceled.'
-                    )
-                    self.state['draft_status'] = None
-                    return
                 await self.send_message(
-                    'The draft has not been initialized.'
+                    'The draft has been canceled.'
                 )
+                self.state['draft_status'] = None
+                return
+            await self.send_message(
+                'The draft has not been initialized.'
+            )
 
     @monitor_cmd
     async def ex_config(self, args, message):
@@ -303,16 +304,17 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress() or len(args) == 0:
             return
-        if not await self.verify_args(args):
-            return
         if args[0] == 'draft' and self.state.get('draft_status') == 'setup':
-            self.state['draft_data'] = PlayerDraft(self.data['entrants'], self.zsr.load_available_settings(), args, self.zsr.load_qualifier_placements())
+            if not await self.parse_draft_args(args):
+                return
+            self.state['draft_data'] = PlayerDraft(self.zsr.load_available_settings(), args)
             self.state['draft_status'] = 'draft_order'
-            if self.state.get('draft_data').is_tournament_race:
-                await self.ex_fpa(['on'], message)
             if len(self.state.get('draft_data').draftees) == 2:
+                if self.state.get('draft_data').is_tournament_race:
+                    await self.ex_fpa(['on'], message)
+                self.state['draft_data'].determine_higher_seed(self.data['entrants'], self.zsr.load_qualifier_placements())
                 await self.send_message(
-                    f"@{self.state['draft_data'].draftees[0]['name'].capitalize()}, would you like to go first or second?",
+                    f"{self.state['draft_data'].draftees[0]['name']}, would you like to go first or second?",
                     actions=[
                         msg_actions.Action(
                             label='First',
@@ -372,7 +374,7 @@ class RandoHandler(RaceHandler):
             )
         elif args[0] == 'order' and self.state.get('draft_status') == 'draft_order':
             if len(self.state.get('draft_data').draftees) > 2:
-                self.state['draft_data'].assign_draft_order(None, args)
+                self.state['draft_data'].assign_draft_order(args, message)
 
     async def ex_first(self, args, message):
         """
@@ -380,24 +382,33 @@ class RandoHandler(RaceHandler):
 
         Allow higher-seeded player to pick first.
         """
-        if self._race_in_progress() or self.state.get('draft_status') != 'draft_order' or len(self.state.get('draft_data').draftees) > 2:
+        if (
+            self._race_in_progress()
+            or self.state.get('draft_status') != 'draft_order'
+            or len(self.state.get('draft_data').draftees) > 2
+            or message.get('user', {}).get('name') != self.state.get('draft_data').draftees[0]['name']
+        ):
             return
-        self.state['draft_data'].assign_draft_order(message, None)
+        self.state['draft_data'].assign_draft_order(args, message)
         self.state['draft_status'] = 'player_bans'
         await self.send_message(
-            f"@{self.state['draft_data'].current_selector}, Use the buttons below to lock in a setting.",
+            f"{self.state['draft_data'].current_selector}, Use the buttons below to lock in a setting.",
             actions=[
                 msg_actions.Action(
-                    label='Ban setting',
+                    label='Settings list',
                     message='!ban ${setting}',
                     submit='Confirm',
                     survey=msg_actions.Survey(
                         msg_actions.SelectInput(
                             name='setting',
-                            label='Setting to ban',
-                            options=self.state['draft_data'].send_available_settings()
+                            label='Lock in setting',
+                            options=self.state['draft_data'].send_available_settings(self.state['draft_status'])
                         )
                     )
+                ),
+                msg_actions.Action(
+                    label='Skip turn',
+                    message='!skip'
                 ),
                 msg_actions.Action(
                     label='Cancel draft',
@@ -412,9 +423,40 @@ class RandoHandler(RaceHandler):
 
         Allow higher-seeded player to pick second.
         """
-        if self._race_in_progress() or self.state.get('draft_status') != 'draft_order' or len(self.state.get('draft_data').draftees) > 2:
+        if (
+            self._race_in_progress()
+            or self.state.get('draft_status') != 'draft_order'
+            or len(self.state.get('draft_data').draftees) > 2
+            or message.get('user', {}).get('name') != self.state.get('draft_data').draftees[0]['name']
+        ):
             return
-        self.state['draft_data'].assign_draft_order(message, None)
+        self.state['draft_data'].assign_draft_order(args, message)
+        self.state['draft_status'] = 'player_bans'
+        await self.send_message(
+            f"{self.state['draft_data'].current_selector}, Use the buttons below to lock in a setting.",
+            actions=[
+                msg_actions.Action(
+                    label='Settings list',
+                    message='!ban ${setting}',
+                    submit='Confirm',
+                    survey=msg_actions.Survey(
+                        msg_actions.SelectInput(
+                            name='setting',
+                            label='Lock in setting',
+                            options=self.state['draft_data'].send_available_settings(self.state['draft_status'])
+                        )
+                    )
+                ),
+                msg_actions.Action(
+                    label='Skip turn',
+                    message='!skip'
+                ),
+                msg_actions.Action(
+                    label='Cancel draft',
+                    message='!draft cancel'
+                )
+            ]
+        )
             
     async def ex_ban(self, args, message):
         """
@@ -424,94 +466,117 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress() or self.state.get('draft_status') != 'player_bans':
             return
-
-    #     reply_to = message.get('user', {}).get('name')
-    #     racer = draft.get('racers')
-    #     major_pool = draft.get('available_settings').get('major')
-    #     minor_pool = draft.get('available_settings').get('minor')
-
-    #     if reply_to == draft.get('current_selector'):
-    #         if len(args) == 1 and (args[0] in major_pool.keys() or args[0] in minor_pool.keys()):
-    #             await self.send_message(
-    #                 f'{args[0].capitalize()} will be removed from the pool.'
-    #             )
-    #             # Remove setting from available settings pool
-    #             major_pool.pop(args[0]) if args[0] in major_pool.keys() else minor_pool.pop(args[0])
-    #             # Advance draft state.
-    #             draft['ban_count'] += 1
-    #             # Change player turn post setting selection.
-    #             if reply_to == racer[0].get('name'):
-    #                 draft.update({'current_selector': racer[1].get('name')})
-    #             elif reply_to == racer[1].get('name'):
-    #                 draft.update({'current_selector': racer[0].get('name')})
-    #             # Move to pick phase once each player has banned.
-    #             if draft.get('ban_count') == 2:
-    #                 draft.update({'status': 'major_pick'})
-    #                 await self.send_message(
-    #                     'All bans have been recorded.'
-    #                 )
-    #                 await self.send_message(
-    #                     f"{draft.get('current_selector')}, modify a major setting with !pick <setting> <value>."
-    #                 )
-    #                 await self.send_message(
-    #                     'Use !settings for of available options.'
-    #                 )
-    #                 return
-    #             await self.send_message(
-    #                 f"{draft.get('current_selector')}, remove a setting with !ban <setting>."
-    #             )
-    #             await self.send_message(
-    #                 'Use !settings for available options.'
-    #             )
-    #             await self.send_message(
-    #                 'Use !skip to avoid removing a setting.'
-    #             )
-    #             return
-    #         # Handle invalid format and unknown arguments
-    #         await self.send_message(
-    #             'Invalid option. Use !settings for available options.'
-    #         )
-
+        if len(self.state.get('draft_data').player_bans) >= int(self.state.get('draft_data').bans_each) * len(self.state.get('draft_data').draftees):
+            return
+        if self.state['draft_data'].ban_setting(args, message):
+            await self.send_message(
+                f"{self.state['draft_data'].current_selector}, Use the buttons below to lock in a setting.",
+                actions=[
+                    msg_actions.Action(
+                        label='Settings list',
+                        message='!ban ${setting}',
+                        submit='Confirm',
+                        survey=msg_actions.Survey(
+                            msg_actions.SelectInput(
+                                name='setting',
+                                label='Lock in setting',
+                                options=self.state['draft_data'].send_available_settings(self.state['draft_status'])
+                            )
+                        )
+                    ),
+                    msg_actions.Action(
+                        label='Skip turn',
+                        message='!skip'
+                    ),
+                    msg_actions.Action(
+                        label='Cancel draft',
+                        message='!draft cancel'
+                    )
+                ]
+            )
+            return
+        await self.send_message(
+            'All bans have been recorded.'
+        )
+        self.state['draft_status'] = 'player_picks'
+        await self.send_message(
+            f"{self.state['draft_data'].current_selector}, Use the buttons below to modify a major setting.",
+            actions=[
+                msg_actions.Action(
+                    label='Settings list',
+                    message='!pick ${setting}',
+                    submit='Confirm',
+                    survey=msg_actions.Survey(
+                        msg_actions.SelectInput(
+                            name='setting',
+                            label='Modify a setting',
+                            options=self.state['draft_data'].send_available_settings(self.state['draft_status'])
+                        )
+                    )
+                ),
+                msg_actions.Action(
+                    label='Cancel draft',
+                    message='!draft cancel'
+                )
+            ]
+        )
+        
     async def ex_skip(self, args, message):
         if self._race_in_progress() or self.state.get('draft_status') != 'player_bans':
             return
+        if self.state['draft_data'].skip_ban(message):
+            await self.send_message(
+                f"{self.state['draft_data'].current_selector}, Use the buttons below to lock in a setting.",
+                actions=[
+                    msg_actions.Action(
+                        label='Settings list',
+                        message='!ban ${setting}',
+                        submit='Confirm',
+                        survey=msg_actions.Survey(
+                            msg_actions.SelectInput(
+                                name='setting',
+                                label='Lock in setting',
+                                options=self.state['draft_data'].send_available_settings(self.state['draft_status'])
+                            )
+                        )
+                    ),
+                    msg_actions.Action(
+                        label='Skip turn',
+                        message='!skip'
+                    ),
+                    msg_actions.Action(
+                        label='Cancel draft',
+                        message='!draft cancel'
+                    )
+                ]
+            )
+            return
+        await self.send_message(
+            'All bans have been recorded.'
+        )
+        self.state['draft_status'] = 'player_picks'
+        await self.send_message(
+            f"{self.state['draft_data'].current_selector}, Use the buttons below to modify a major setting.",
+            actions=[
+                msg_actions.Action(
+                    label='Settings list',
+                    message='!pick ${setting}',
+                    submit='Confirm',
+                    survey=msg_actions.Survey(
+                        msg_actions.SelectInput(
+                            name='setting',
+                            label='Modify a setting',
+                            options=self.state['draft_data'].send_available_settings(self.state['draft_status'])
+                        )
+                    )
+                ),
+                msg_actions.Action(
+                    label='Cancel draft',
+                    message='!draft cancel'
+                )
+            ]
+        )
         
-        # reply_to = message.get('user', {}).get('name')
-        # racer = draft.get('racers')
-
-        # if reply_to == draft.get('current_selector'):
-        #     await self.send_message(
-        #         f'{reply_to} has chosen to skip removing a setting.'
-        #     )
-        #     # Advance draft state.
-        #     draft['ban_count'] += 1
-        #     # Change player turn post setting selection.
-        #     if reply_to == racer[0].get('name'):
-        #         draft.update({'current_selector': racer[1].get('name')})
-        #     elif reply_to == racer[1].get('name'):
-        #         draft.update({'current_selector': racer[0].get('name')})
-        #     if draft.get('ban_count') < 2:
-        #         await self.send_message(
-        #             f"{draft.get('current_selector')}, remove a setting with !ban <setting>."
-        #         )
-        #         await self.send_message(
-        #             'Use !skip to avoid removing a setting.'
-        #         )
-        #         await self.send_message(
-        #             'Use !settings for available options.'
-        #         )
-        #     elif draft.get('ban_count') == 2:
-        #         draft.update({'status': 'major_pick'})
-        #         await self.send_message(
-        #             'All bans have been recorded.'
-        #         )
-        #         await self.send_message(
-        #             f"{draft.get('current_selector')}, modify a major setting with !pick <setting> <value>."
-        #         )
-        #         await self.send_message(
-        #             'Use !settings for of available options.'
-        #         )
-
     async def ex_pick(self, args, message):
         """
         Handles !pick commands.
@@ -520,7 +585,9 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress() or self.state.get('draft_status') != 'player_picks':
             return
-        
+        self.state['draft_data'].pick_setting(args, message)
+
+
         # draft = self.state.get('draft_data')
         # if self._race_in_progress() or not draft.get('enabled') or not draft.get('status') in ['major_pick', 'minor_pick']:
         #     return
@@ -694,6 +761,9 @@ class RandoHandler(RaceHandler):
         if self._race_in_progress():
             return
         if self.state.get('draft_status') is not None:
+            await self.send_message(
+                'You must cancel the draft to use these commands.'
+            )
             return
         await self.roll_and_send(args, message, encrypt=False, dev=False)
 
@@ -704,6 +774,9 @@ class RandoHandler(RaceHandler):
         if self._race_in_progress():
             return
         if self.state.get('draft_status') is not None:
+            await self.send_message(
+                'You must cancel the draft to use these commands.'
+            )
             return
         await self.send_presets(False)
 
@@ -714,6 +787,9 @@ class RandoHandler(RaceHandler):
         if self._race_in_progress():
             return
         if self.state.get('draft_status') is not None:
+            await self.send_message(
+                'You must cancel the draft to use these commands.'
+            )
             return
         await self.send_presets(True)
 
@@ -873,31 +949,31 @@ class RandoHandler(RaceHandler):
             for name, preset in self.zsr.presets.items():
                 await self.send_message('%s – %s' % (name, preset['full_name']))
 
-    async def verify_args(self, args):
+    async def parse_draft_args(self, args):
         if args[0] == 'draft':
-            if len(args) < 6:
+            if len(args) < 7:
                 await self.send_message(
                     'Invalid syntax. Use the buttons for assistance.'
                 )
-                return False
+                return
             _, *draftees, _, _, _, _ = args
+            if len(draftees) < 2:
+                await self.send_message(
+                    'At least 2 draftees must be selected before continuing.'
+                )
+                return
             for entrant in self.data['entrants']:
                 if entrant['user']['name'].lower() not in draftees:
                     await self.send_message(
                         'One or more supplied draftees are not in the room.'
                     )
-                    return False
-            if len(draftees) < 2:
-                await self.send_message(
-                    'At least 2 draftees must be selected before continuing.'
-                )
-                return False
+                    return
         elif args[0] == 'random':
             if len(args) != 3:
                 await self.send_message(
                     'Invalid syntax. Use the buttons for assistance.'
                 )
-                return False
+                return
         return True
 
     def _race_in_progress(self):

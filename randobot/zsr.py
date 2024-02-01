@@ -174,7 +174,7 @@ class ZSR:
         return {
             "major": {
                 "bridge": {
-                    "__setting": "Rainbow Bridge",
+                    "_setting": "Rainbow Bridge",
                     "default": "meds",
                     "options": {
                         "meds": {
@@ -193,7 +193,7 @@ class ZSR:
                     }
                 },
                 "deku": {
-                    "__setting": "Deku",
+                    "_setting": "Deku",
                     "default": "closed",
                     "options": {
                         "closed": {
@@ -211,7 +211,7 @@ class ZSR:
                     }
                 },
                 "interiors": {
-                    "__setting": "Interior ER",
+                    "_setting": "Interior ER",
                     "default": "off",
                     "options": {
                         "off": {
@@ -229,7 +229,7 @@ class ZSR:
                     }
                 },
                 "dungeons": {
-                    "__setting": "Dungeon ER",
+                    "_setting": "Dungeon ER",
                     "default": "off",
                     "options": {
                         "off": {
@@ -239,7 +239,7 @@ class ZSR:
                             }                    
                         },
                         "on": {
-                            "name": "Simple (excl. Ganon's Castle)",
+                            "name": "On (excl. Ganon's Castle)",
                             "data": {
                                 "shuffle_dungeon_entrances": "simple"
                             }
@@ -247,7 +247,7 @@ class ZSR:
                     }
                 },
                 "grottos": {
-                    "__setting": "Grotto ER",
+                    "_setting": "Grotto ER",
                     "default": "off",
                     "options": {
                         "off": {
@@ -265,7 +265,7 @@ class ZSR:
                     }
                 },
                 "shops": {
-                    "__setting": "Shopsanity",
+                    "_setting": "Shopsanity",
                     "default": "off",
                     "options": {
                         "off": {
@@ -283,7 +283,7 @@ class ZSR:
                     }
                 },
                 "ow_tokens": {
-                    "__setting": "Overworld Token Shuffle",
+                    "_setting": "Overworld Token Shuffle",
                     "default": "off",
                     "options": {
                         "off": {
@@ -301,7 +301,7 @@ class ZSR:
                     }
                 },
                 "dungeon_tokens": {
-                    "__setting": "Dungeon Token Shuffle",
+                    "_setting": "Dungeon Token Shuffle",
                     "default": "off",
                     "options": {
                         "off": {
@@ -319,7 +319,7 @@ class ZSR:
                     }
                 },
                 "scrubs": {
-                    "__setting": "Scrub Shuffle",
+                    "_setting": "Scrub Shuffle",
                     "default": "off",
                     "options": {
                         "off": {
@@ -337,7 +337,7 @@ class ZSR:
                     }
                 },
                 "keys": {
-                    "__setting": "Key Shuffle",
+                    "_setting": "Key Shuffle",
                     "default": "own_dungeon",
                     "options": {
                         "own_dungeon": {
@@ -365,7 +365,7 @@ class ZSR:
                     }
                 },
                 "required_only": {
-                    "__setting": "Required Only (Beatable Only)",
+                    "_setting": "Required Only (Beatable Only)",
                     "default": "off",
                     "options": {
                         "off": {
@@ -383,7 +383,7 @@ class ZSR:
                     }
                 },
                 "zora_fountain": {
-                    "__setting": "Zora Fountain",
+                    "_setting": "Zora Fountain",
                     "default": "closed",
                     "options": {
                         "closed": {
@@ -401,7 +401,7 @@ class ZSR:
                     }
                 },
                 "cows": {
-                    "__setting": "Cow Shuffle",
+                    "_setting": "Cow Shuffle",
                     "default": "off",
                     "options": {
                         "off": {
@@ -419,7 +419,7 @@ class ZSR:
                     }
                 },
                 "gerudo_card": {
-                    "__setting": "Shuffled Gerudo Card",
+                    "_setting": "Shuffled Gerudo Card",
                     "default": "off",
                     "options": {
                         "off": {
@@ -437,7 +437,7 @@ class ZSR:
                     }
                 },
                 "trials": {
-                    "__setting": "Trials",
+                    "_setting": "Trials",
                     "default": "off",
                     "options": {
                         "off": {
@@ -457,7 +457,7 @@ class ZSR:
             },
             "minor": {
                 "starting_age": {
-                    "__setting": "Starting Age",
+                    "_setting": "Starting Age",
                     "default": "random",
                     "options": {
                         "random": {
@@ -481,7 +481,7 @@ class ZSR:
                     }
                 },
                 "random_spawns": {
-                    "__setting": "Random Spawns",
+                    "_setting": "Random Spawns",
                     "default": "off",
                     "options": {
                         "off": {
@@ -502,7 +502,7 @@ class ZSR:
                     }
                 },
                 "consumables": {
-                    "__setting": "Start with Consumables",
+                    "_setting": "Start with Consumables",
                     "default": "on",
                     "options": {
                         "on": {
@@ -520,7 +520,7 @@ class ZSR:
                     }
                 },
                 "rupees": {
-                    "__setting": "Start with Max Rupees",
+                    "_setting": "Start with Max Rupees",
                     "default": "off",
                     "options": {
                         "off": {
@@ -538,7 +538,7 @@ class ZSR:
                     }
                 },
                 "cuccos": {
-                    "__setting": "Anju's Chicken Count",
+                    "_setting": "Anju's Chicken Count",
                     "default": "7",
                     "options": {
                         "7": {
@@ -556,7 +556,7 @@ class ZSR:
                     }
                 },
                 "free_scarecrow": {
-                    "__setting": "Free Scarecrow",
+                    "_setting": "Free Scarecrow",
                     "default": "off",
                     "options": {
                         "off": {
@@ -574,7 +574,7 @@ class ZSR:
                     }
                 },
                 "camc": {
-                    "__setting": "Chest Appearance Matches Contents",
+                    "_setting": "CAMC",
                     "default": "on",
                     "options": {
                         "on": {
@@ -592,7 +592,7 @@ class ZSR:
                     }
                 },
                 "mask_quest": {
-                    "__setting": "Completed Mask Quest",
+                    "_setting": "Completed Mask Quest",
                     "default": "off",
                     "options": {
                         "off": {
@@ -611,7 +611,7 @@ class ZSR:
                     }
                 },
                 "bfa": {
-                    "__setting": "Blue Fire Arrows",
+                    "_setting": "Blue Fire Arrows",
                     "default": "off",
                     "options": {
                         "off": {
@@ -629,7 +629,7 @@ class ZSR:
                     }
                 },
                 "owls": {
-                    "__setting": "Random Owl Drops",
+                    "_setting": "Random Owl Drops",
                     "default": "off",
                     "options": {
                         "off": {
@@ -647,7 +647,7 @@ class ZSR:
                     }
                 },
                 "song_warps": {
-                    "__setting": "Random Song Warps",
+                    "_setting": "Random Song Warps",
                     "default": "off",
                     "options": {
                         "off": {
@@ -665,7 +665,7 @@ class ZSR:
                     }
                 },
                 "shuffle_beans": {
-                    "__setting": "Shuffled Magic Beans",
+                    "_setting": "Shuffled Magic Beans",
                     "default": "off",
                     "options": {
                         "off": {
@@ -683,7 +683,7 @@ class ZSR:
                     }
                 },
                 "expensive_merchants": {
-                    "__setting": "Expensive Merchants",
+                    "_setting": "Expensive Merchants",
                     "default": "off",
                     "options": {
                         "off": {
@@ -701,7 +701,7 @@ class ZSR:
                     }
                 },
                 "beans_planted": {
-                    "__setting": "Magic Beans Planted",
+                    "_setting": "Magic Beans Planted",
                     "default": "off",
                     "options": {
                         "off": {
@@ -719,7 +719,7 @@ class ZSR:
                     }
                 },
                 "door_of_time": {
-                    "__setting": "Door of Time",
+                    "_setting": "Door of Time",
                     "default": "open",
                     "options": {
                         "open": {
@@ -737,7 +737,7 @@ class ZSR:
                     }
                 },
                 "chus_in_logic": {
-                    "__setting": "Bombchus in Logic",
+                    "_setting": "Bombchus in Logic",
                     "default": "off",
                     "options": {
                         "off": {
