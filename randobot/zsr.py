@@ -68,12 +68,12 @@ class ZSR:
         presets = requests.get(self.preset_endpoint).json()
         settings = requests.get(self.settings_endpoint).json()
         return {
-            key: {
-                'full_name': value['fullName'],
-                'settings': settings.get(value['fullName']),
+            preset: {
+                'full_name': setting,
+                'settings': settings.get(setting)
             }
-            for key, value in presets.items()
-            if value['fullName'] in settings
+            for preset in presets for setting in settings
+            if preset in settings[setting]['aliases']
         }
 
     def load_presets_dev(self):
@@ -83,12 +83,12 @@ class ZSR:
         presets_dev = requests.get(self.preset_dev_endpoint).json()
         settings_dev = requests.get(self.settings_dev_endpoint).json()
         return {
-            key: {
-                'full_name': value['fullName'],
-                'settings': settings_dev.get(value['fullName']),
+            preset: {
+                'full_name': setting,
+                'settings': settings_dev.get(setting)
             }
-            for key, value in presets_dev.items()
-            if value['fullName'] in settings_dev
+            for preset in presets_dev for setting in settings_dev
+            if preset in settings_dev[setting]['aliases']
         }
 
     def get_latest_dev_version(self):
