@@ -80,17 +80,15 @@ class ZSR:
         """
         Load and return available seed presets for dev.
         """
-        presets_dev = requests.get(self.preset_dev_endpoint).json()
         settings_dev = requests.get(self.settings_dev_endpoint).json()
         return {
-            preset: {
-                'full_name': setting,
-                'settings': settings_dev.get(setting)
+            min(settings_dev[preset]['aliases'], key=len): {
+                'full_name': preset,
+                'settings': settings_dev.get(preset)
             }
-            for preset in presets_dev for setting in settings_dev
-            if preset in settings_dev[setting]['aliases']
+            for preset in settings_dev
         }
-
+        
     def get_latest_dev_version(self):
         """
         Returns currently active dev version and a bool indicating if it's changed.
