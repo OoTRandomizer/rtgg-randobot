@@ -88,7 +88,7 @@ class ZSR:
             }
             for preset in settings_dev
         }
-        
+
     def get_latest_dev_version(self):
         """
         Returns currently active dev version and a bool indicating if it's changed.
