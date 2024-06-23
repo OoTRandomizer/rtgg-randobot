@@ -78,16 +78,18 @@ class RandoHandler(RaceHandler):
         self.midos_house = midos_house
 
     async def should_stop(self):
+        if self.data.get('opened_by') is None:
+            # Ignore all rooms opened by bots, allowing Mido (https://github.com/midoshouse/midos.house) to open rooms in official goals.
+            # This is okay because RandoBot does not open any rooms.
+            return True
         goal_name = self.data.get('goal', {}).get('name')
         goal_is_custom = self.data.get('goal', {}).get('custom', False)
         if goal_is_custom:
             if await self.midos_house.handles_custom_goal(goal_name):
-                return True # handled by Mido (https://github.com/midoshouse/midos.house)
+                return True # handled by Mido
         else:
-            if goal_name == 'Random settings league':
-                return True # handled by RSLBot (https://github.com/midoshouse/midos.house)
-            elif goal_name == 'Triforce Blitz':
-                return True # handled by Mido (https://github.com/midoshouse/midos.house)
+            if goal_name in ('Random settings league', 'Triforce Blitz'):
+                return True # handled by Mido
         return await super().should_stop()
 
     async def begin(self):
