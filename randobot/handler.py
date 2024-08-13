@@ -180,7 +180,7 @@ class RandoHandler(RaceHandler):
             self.state['password_published'] = True
         if self._race_in_progress() and self.state.get('pinned_msg'):
             await self.unpin_message(self.state['pinned_msg'])
-            del self.state['pinned_msg']  
+            del self.state['pinned_msg']
 
     @monitor_cmd
     async def ex_s7(self, args, message):
