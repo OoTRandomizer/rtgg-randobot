@@ -1,6 +1,6 @@
 import json
-
 import requests
+import time
 
 
 class ZSR:
@@ -183,19 +183,31 @@ class ZSR:
         pool = requests.get(self.draft_settings_pool_endpoint).json()
         return pool
     
-    def get_password(self, seed_id):
+    def get_password(self, seed_id, retries=3, delay=2):
         """
-        Grab password for seed with active password
+        Grab password for seed with active password.
+        
+        Tries to retrieve the password a specified number of times, 
+        with a delay between attempts. Returns None if unsuccessful.
         """
-        data = requests.get(self.password_endpoint, params={
-            'id': seed_id,
-            'key': self.ootr_api_key,
-        }).json()
-        try:
-            password_notes = json.loads(data.get('pw'))
-        except ValueError:
-            return None
-        return ' '.join(
-            self.notes_map.get(item, item)
-            for item in password_notes
-        )
+        for attempt in range(retries):
+            try:
+                data = requests.get(self.password_endpoint, params={
+                    'id': seed_id,
+                    'key': self.ootr_api_key,
+                }, timeout=5)
+                
+                data.raise_for_status()
+                
+                data = data.json()
+                password_notes = json.loads(data.get('pw'))
+                
+                return ' '.join(
+                    self.notes_map.get(item, item)
+                    for item in password_notes
+                )
+            except (ValueError, requests.RequestException) as e:
+                if attempt < retries - 1:
+                    time.sleep(delay)
+                else:
+                    return None
