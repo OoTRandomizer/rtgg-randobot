@@ -81,7 +81,7 @@ can be toggled on by a race monitor or moderator with `!password on`.
 It can be toggled off again with `!password off`.
 
 When enabled, the seed is generated with a random 5 digit password consisting of
-ocarina notes. This password is required to be start a file in the generated seed.
+ocarina notes. This password is required to start a file in the generated seed.
 
 Once this setting is enabled, Randobot will publish the password at the start of the
 race countdown next to the seed hash in the race room information.
