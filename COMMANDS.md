@@ -71,6 +71,22 @@ immediately if there is a ping.
 To prevent spam or misuse, it is also recommended that the **"Allow non-entrant
 chat"** race setting is disabled when conducting a race using FPA.
 
+
+## !password
+
+Usable by: **varies**
+
+Enable or disable the password functionality. By default, this is disabled, but it 
+can be toggled on by a race monitor or moderator with `!password on`. 
+It can be toggled off again with `!password off`.
+
+When enabled, the seed is generated with a random 5 digit password consisting of
+ocarina notes. This password is required to be start a file in the generated seed.
+
+Once this setting is enabled, Randobot will publish the password at the start of the
+race countdown next to the seed hash in the race room information.
+
+
 ## !s7
 
 Usable by: **race monitor/room opener**
