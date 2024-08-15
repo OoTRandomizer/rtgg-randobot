@@ -1011,7 +1011,7 @@ class RandoHandler(RaceHandler):
                 await self.load_seed_password()
         else:
             self.state['seed_password'] = seed_password
-            if (manual):
+            if manual:
                 return True
 
 
