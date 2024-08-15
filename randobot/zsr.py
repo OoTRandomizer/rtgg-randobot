@@ -206,7 +206,7 @@ class ZSR:
                     self.notes_map.get(item, item)
                     for item in password_notes
                 )
-            except (ValueError, requests.RequestException) as e:
+            except (ValueError, requests.RequestException):
                 if attempt < retries - 1:
                     time.sleep(delay)
                 else:

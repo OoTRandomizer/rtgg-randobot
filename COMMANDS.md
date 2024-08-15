@@ -86,6 +86,10 @@ ocarina notes. This password is required to start a file in the generated seed.
 Once this setting is enabled, Randobot will publish the password at the start of the
 race countdown next to the seed hash in the race room information.
 
+If the automated password acquiry after rolling the seed fails multiple times, manual acquiry 
+can be attempted using `!password get`. Note that a race with a password activated seed can 
+not be started without a password.
+
 
 ## !s7
 
