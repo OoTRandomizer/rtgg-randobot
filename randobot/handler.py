@@ -180,11 +180,11 @@ class RandoHandler(RaceHandler):
                 'seed_hash': self.state['seed_hash'],
                 'seed_url': self.seed_url % self.state['seed_id'],
             })
-            resp = (
-                'This seed is password protected. To start a file, enter this password on the file select screen:\n'
-                '%{seed_password}\nYou are allowed to enter the password before the race starts.'
-            )
-            await self.send_message(resp)
+            await self.send_message(
+                    'This seed is password protected. To start a file, enter this password on the file select screen:\n'
+                    '%(seed_password)s\nYou are allowed to enter the password before the race starts.'
+                    % {'seed_password': seed_password}
+                )
             self.state['password_published'] = True
         if self._race_in_progress() and self.state.get('pinned_msg'):
             await self.unpin_message(self.state['pinned_msg'])
