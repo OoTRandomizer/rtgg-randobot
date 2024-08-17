@@ -138,7 +138,7 @@ class ZSR:
             params['encrypt'] = 'true'
         if encrypt and dev:
             params['locked'] = 'true'
-        if password :
+        if password:
             params['passwordLock'] = 'true'
         if race_type == 'qualifier':
             params['hideSettings'] = 'true'
