@@ -133,6 +133,11 @@ class RandoHandler(RaceHandler):
                                 options={key: value['full_name'] for key, value in self.zsr.presets_dev.items()},
                                 default='weekly',
                             ),
+                            msg_actions.BoolInput(
+                                name='--withpassword',
+                                label='Password',
+                                help_text='Locks file creation behind a 5 ocarina notes password provided at countdown start',
+                            ),
                         ),
                     ),
                     msg_actions.ActionLink(
