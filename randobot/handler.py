@@ -179,16 +179,15 @@ class RandoHandler(RaceHandler):
     async def race_data(self, data):
         await super().race_data(data)
         if self._race_pending() and self.state.get('password_active') and not self.state['password_published']:
-            seed_password = self.state['seed_password']
-            await self.set_bot_raceinfo('File Select Password: %{seed_password} -- Hash: %(seed_hash)s\n%(seed_url)s' % {
-                'seed_password': seed_password,
+            await self.set_bot_raceinfo('%(seed_hash)s | Password: %(seed_password)s\n%(seed_url)s' % {
+                'seed_password': self.state['seed_password'],
                 'seed_hash': self.state['seed_hash'],
                 'seed_url': self.seed_url % self.state['seed_id'],
             })
             await self.send_message(
                     'This seed is password protected. To start a file, enter this password on the file select screen:\n'
                     '%(seed_password)s\nYou are allowed to enter the password before the race starts.'
-                    % {'seed_password': seed_password}
+                    % {'seed_password': self.state['seed_password']}
                 )
             self.state['password_published'] = True
         if self._race_in_progress() and self.state.get('pinned_msg'):
