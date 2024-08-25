@@ -889,16 +889,17 @@ class RandoHandler(RaceHandler):
         if len(args) > 0:
             preset = args[0]
             
-            if len(args) == 2 and args[1] == "--withpassword":
-                self.state['password_active'] = True
-            elif len(args) == 2: 
-                await self.send_message(
-                    'Sorry %(reply_to)s, that is not the correct syntax. '
-                    'The syntax is "!seed presetName {--withpassword}'
-                    % {'reply_to': reply_to or 'friend'}
-                )
-                return
-        
+            if len(args) == 2:
+                if args[1] == "--withpassword":
+                    self.state['password_active'] = True
+                else:
+                    await self.send_message(
+                        'Sorry %(reply_to)s, that is not the correct syntax. '
+                        'The syntax is "!seed presetName {--withpassword}'
+                        % {'reply_to': reply_to or 'friend'}
+                    )
+                    return
+            
         draft = self.state.get('draft_data')
         password = self.state.get('password_active')
 
