@@ -105,7 +105,7 @@ class RandoHandler(RaceHandler):
                     msg_actions.Action(
                         label='Roll seed',
                         help_text='Create a seed using the latest release',
-                        message='!seed ${preset} ${--withpassword}',
+                        message='!seed ${preset} ',
                         submit='Roll race seed',
                         survey=msg_actions.Survey(
                             msg_actions.SelectInput(
@@ -114,17 +114,12 @@ class RandoHandler(RaceHandler):
                                 options={key: value['full_name'] for key, value in self.zsr.presets.items()},
                                 default='weekly',
                             ),
-                            msg_actions.BoolInput(
-                                name='--withpassword',
-                                label='Password',
-                                help_text='Locks file creation behind a 5 ocarina notes password provided at countdown start',
-                            ),
                         ),
                     ),
                     msg_actions.Action(
                         label='Dev seed',
                         help_text='Create a seed using the latest dev branch',
-                        message='!seeddev ${preset}',
+                        message='!seeddev ${preset} ${--withpassword}',
                         submit='Roll dev seed',
                         survey=msg_actions.Survey(
                             msg_actions.SelectInput(
