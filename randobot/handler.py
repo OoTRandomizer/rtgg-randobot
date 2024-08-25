@@ -137,7 +137,7 @@ class RandoHandler(RaceHandler):
                     ),
                     msg_actions.ActionLink(
                         label='Help',
-                        url='https://github.com/deains/ootr-randobot/blob/master/COMMANDS.md',
+                        url='https://github.com/OoTRandomizer/rtgg-randobot/blob/master/COMMANDS.md',
                     ),
                 ],
                 pinned=True,
