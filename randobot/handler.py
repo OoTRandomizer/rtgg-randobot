@@ -105,7 +105,7 @@ class RandoHandler(RaceHandler):
                     msg_actions.Action(
                         label='Roll seed',
                         help_text='Create a seed using the latest release',
-                        message='!seed ${preset} ',
+                        message='!seed ${preset}',
                         submit='Roll race seed',
                         survey=msg_actions.Survey(
                             msg_actions.SelectInput(
