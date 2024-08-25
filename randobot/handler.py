@@ -131,7 +131,7 @@ class RandoHandler(RaceHandler):
                             msg_actions.BoolInput(
                                 name='--withpassword',
                                 label='Password',
-                                help_text='Locks file creation behind a 5 ocarina notes password provided at countdown start',
+                                help_text='Locks file creation behind a 6 ocarina notes password provided at countdown start',
                             ),
                         ),
                     ),
@@ -813,7 +813,7 @@ class RandoHandler(RaceHandler):
                     self.state['password_active'] = True
                     resp = (
                         'Password protection in file select is now active. '
-                        'Every runner will have to enter a 5 ocarina note password before '
+                        'Every runner will have to enter a 6 ocarina note password before '
                         'being able to start a file. The password will be announced in '
                         'the race room info up top as the countdown starts.'
                     )
@@ -834,7 +834,7 @@ class RandoHandler(RaceHandler):
                     resp = 'Password protection in file select is now deactivated.'
         elif self.state['password_active']:
             resp = (
-                'Password protection in file select is currently active. Every runner will have to enter a 5 ocarina note password before '
+                'Password protection in file select is currently active. Every runner will have to enter a 6 ocarina note password before '
                 'being able to start a file. The password will be announced in the race room info up top as the countdown starts.'
             )
         else:
