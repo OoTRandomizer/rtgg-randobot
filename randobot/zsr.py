@@ -1,6 +1,6 @@
 import json
-
 import requests
+import time
 
 
 class ZSR:
@@ -11,6 +11,7 @@ class ZSR:
     seed_endpoint = 'https://ootrandomizer.com/api/v2/seed/create'
     status_endpoint = 'https://ootrandomizer.com/api/v2/seed/status'
     details_endpoint = 'https://ootrandomizer.com/api/v2/seed/details'
+    password_endpoint = 'https://ootrandomizer.com/api/v2/seed/pw'
     version_endpoint = 'https://ootrandomizer.com/api/version'
     preset_endpoint = 'https://ootrandomizer.com/rtgg/ootr_presets.json'
     preset_dev_endpoint = 'https://ootrandomizer.com/rtgg/ootr_presets_dev.json'
@@ -52,6 +53,14 @@ class ZSR:
         'Slingshot': 'HashSlingshot',
         'SOLD OUT': 'HashSoldOut',
         'Stone of Agony': 'HashStoneOfAgony',
+    }
+
+    notes_map = {
+        'A': 'NoteA',
+        'C down':'NoteCdown',
+        'C up':'NoteCup',
+        'C left':'NoteCleft',
+        'C right':'NoteCright',
     }
 
     def __init__(self, ootr_api_key):
@@ -100,7 +109,7 @@ class ZSR:
             return latest_dev_version, True
         return latest_dev_version, False
 
-    def roll_seed(self, preset, encrypt, dev, settings, race_type):
+    def roll_seed(self, preset, encrypt, dev, settings, race_type, password=False):
         """
         Generate a seed and return its public URL.
         """
@@ -129,6 +138,8 @@ class ZSR:
             params['encrypt'] = 'true'
         if encrypt and dev:
             params['locked'] = 'true'
+        if password:
+            params['passwordLock'] = 'true'
         if race_type == 'qualifier':
             params['hideSettings'] = 'true'
         if dev:
@@ -171,3 +182,32 @@ class ZSR:
         """
         pool = requests.get(self.draft_settings_pool_endpoint).json()
         return pool
+    
+    def get_password(self, seed_id, retries=3, delay=2):
+        """
+        Grab password for seed with active password.
+        
+        Tries to retrieve the password a specified number of times, 
+        with a delay between attempts. Returns None if unsuccessful.
+        """
+        for attempt in range(retries):
+            try:
+                data = requests.get(self.password_endpoint, params={
+                    'id': seed_id,
+                    'key': self.ootr_api_key,
+                }, timeout=5)
+                
+                data.raise_for_status()
+                
+                data = data.json()
+                password_notes = json.loads(data.get('pw'))
+                
+                return ' '.join(
+                    self.notes_map.get(item, item)
+                    for item in password_notes
+                )
+            except (ValueError, requests.RequestException):
+                if attempt < retries - 1:
+                    time.sleep(delay)
+                else:
+                    return None

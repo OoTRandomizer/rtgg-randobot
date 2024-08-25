@@ -119,7 +119,7 @@ class RandoHandler(RaceHandler):
                     msg_actions.Action(
                         label='Dev seed',
                         help_text='Create a seed using the latest dev branch',
-                        message='!seeddev ${preset}',
+                        message='!seeddev ${preset} ${--withpassword}',
                         submit='Roll dev seed',
                         survey=msg_actions.Survey(
                             msg_actions.SelectInput(
@@ -127,6 +127,11 @@ class RandoHandler(RaceHandler):
                                 label='Preset',
                                 options={key: value['full_name'] for key, value in self.zsr.presets_dev.items()},
                                 default='weekly',
+                            ),
+                            msg_actions.BoolInput(
+                                name='--withpassword',
+                                label='Password',
+                                help_text='Locks file creation behind a 5 ocarina notes password provided at countdown start',
                             ),
                         ),
                     ),
@@ -137,16 +142,19 @@ class RandoHandler(RaceHandler):
                 ],
                 pinned=True,
             )
-            await self.send_message(
-                'If this is a draft race, use !s7 tournament for official matches, '
-                'otherwise use !s7 <draft|random>'
-            )
             self.state.setdefault('draft_data', {})
             self.state['intro_sent'] = True
         if 'locked' not in self.state:
             self.state['locked'] = False
         if 'fpa' not in self.state:
             self.state['fpa'] = False
+        if 'password_active' not in self.state:
+            self.state['password_active'] = False
+        if 'password_published' not in self.state:
+            self.state['password_published'] = False
+        if 'password_retrieval_failed' not in self.state:
+            self.state['password_retrieval_failed'] = False
+
 
     async def end(self):
         if self.state.get('pinned_msg'):
@@ -165,6 +173,18 @@ class RandoHandler(RaceHandler):
 
     async def race_data(self, data):
         await super().race_data(data)
+        if self._race_pending() and self.state.get('password_active') and not self.state['password_published']:
+            await self.set_bot_raceinfo('%(seed_hash)s | Password: %(seed_password)s\n%(seed_url)s' % {
+                'seed_password': self.state['seed_password'],
+                'seed_hash': self.state['seed_hash'],
+                'seed_url': self.seed_url % self.state['seed_id'],
+            })
+            await self.send_message(
+                    'This seed is password protected. To start a file, enter this password on the file select screen:\n'
+                    '%(seed_password)s\nYou are allowed to enter the password before the race starts.'
+                    % {'seed_password': self.state['seed_password']}
+                )
+            self.state['password_published'] = True
         if self._race_in_progress() and self.state.get('pinned_msg'):
             await self.unpin_message(self.state['pinned_msg'])
             del self.state['pinned_msg']
@@ -783,6 +803,46 @@ class RandoHandler(RaceHandler):
             return
         await self.send_presets(True)
 
+    @monitor_cmd
+    async def ex_password(self, args, message): 
+        if len(args) == 1 and args[0] in ('on', 'off', 'get'):
+            if args[0] == 'on':
+                if self.state['password_active']:
+                    resp = 'Password protection in file select is already activated'
+                else:
+                    self.state['password_active'] = True
+                    resp = (
+                        'Password protection in file select is now active. '
+                        'Every runner will have to enter a 5 ocarina note password before '
+                        'being able to start a file. The password will be announced in '
+                        'the race room info up top as the countdown starts.'
+                    )
+            elif args[0] == 'get':
+                if self.state['password_retrieval_failed']:
+                    seed_password_acquired = await self.load_seed_password(manual=True)            
+                    if seed_password_acquired == False:
+                        resp = 'Sorry, password could not be retrieved. Please try again in a few minutes.'
+                    else:
+                        resp = 'The password has been acquired successfully. You may start the race now.'
+                else: 
+                    resp = 'Manual password retrieval is only available if automated retrieval has not been successful before.'
+            else:  # args[0] == 'off'
+                if not self.state['password_active']:
+                    resp = 'Password protection in file select is not active.'
+                else:
+                    self.state['password_active'] = False
+                    resp = 'Password protection in file select is now deactivated.'
+        elif self.state['password_active']:
+            resp = (
+                'Password protection in file select is currently active. Every runner will have to enter a 5 ocarina note password before '
+                'being able to start a file. The password will be announced in the race room info up top as the countdown starts.'
+            )
+        else:
+            resp = 'Password protection is not active. You may enable it with !password on'
+        if resp:
+            reply_to = message.get('user', {}).get('name', 'friend')
+            await self.send_message(resp % {'reply_to': reply_to})
+
     async def ex_fpa(self, args, message):
         if len(args) == 1 and args[0] in ('on', 'off'):
             if not can_monitor(message):
@@ -824,7 +884,23 @@ class RandoHandler(RaceHandler):
         valid.
         """
         reply_to = message.get('user', {}).get('name')
+        preset = 'weekly'
+
+        if len(args) > 0:
+            preset = args[0]
+            
+            if len(args) == 2 and args[1] == "--withpassword":
+                self.state['password_active'] = True
+            else: 
+                await self.send_message(
+                    'Sorry %(reply_to)s, that is not the correct syntax. '
+                    'The syntax is "!seed presetName {--withpassword}'
+                    % {'reply_to': reply_to or 'friend'}
+                )
+                return
+        
         draft = self.state.get('draft_data')
+        password = self.state.get('password_active')
 
         if self.state.get('locked') and not can_monitor(message):
             await self.send_message(
@@ -858,17 +934,19 @@ class RandoHandler(RaceHandler):
                 encrypt=encrypt,
                 dev=dev,
                 reply_to=reply_to,
-                settings=self.patch_settings()
+                settings=self.patch_settings(),
+                password=password
             )
             return 
         await self.roll(
-            preset=args[0] if args else 'weekly',
+            preset=preset,
             encrypt=encrypt,
             dev=dev,
-            reply_to=reply_to
+            reply_to=reply_to,
+            password=password
         )
 
-    async def roll(self, preset, encrypt, dev, reply_to, settings=None):
+    async def roll(self, preset, encrypt, dev, reply_to, settings=None, password=False):
         """
         Generate a seed and send it to the race room.
         """
@@ -882,7 +960,7 @@ class RandoHandler(RaceHandler):
                 )
                 return
 
-        seed_id, seed_uri = self.zsr.roll_seed(preset, encrypt, dev, settings, self.state.get('draft_data').get('race_type'))
+        seed_id, seed_uri = self.zsr.roll_seed(preset, encrypt, dev, settings, self.state.get('draft_data').get('race_type'), password)
 
         await self.send_message(
             '%(reply_to)s, here is your seed: %(seed_uri)s'
@@ -907,15 +985,36 @@ class RandoHandler(RaceHandler):
                 await self.check_seed_status()
         elif status == 1:
             await self.load_seed_hash()
+            await self.load_seed_password()            
         elif status >= 2:
             self.state['seed_id'] = None
             await self.send_message(
                 'Sorry, but it looks like the seed failed to generate. Use '
                 '!seed to try again.'
             )
+            
+
+    async def load_seed_password(self, manual=False):
+        seed_password = self.zsr.get_password(self.state['seed_id'])
+        if seed_password is None:
+            if manual:
+                return False
+            else:
+                self.state['password_retrieval_failed'] = True
+                await self.send_message(
+                    'Sorry, but it looks like the password for this seed cannot be retrieved.'
+                    'Please wait a few minutes and try manually before race start using !password get'
+                )
+        else:
+            self.state['seed_password'] = seed_password
+            self.state['password_retrieval_failed'] = False
+            if manual:
+                return True
+
 
     async def load_seed_hash(self):
         seed_hash = self.zsr.get_hash(self.state['seed_id'])
+        self.state['seed_hash'] = seed_hash
         await self.set_bot_raceinfo('%(seed_hash)s\n%(seed_url)s' % {
             'seed_hash': seed_hash,
             'seed_url': self.seed_url % self.state['seed_id'],
@@ -1010,5 +1109,8 @@ class RandoHandler(RaceHandler):
 
         return preset
 
+    def _race_pending(self):
+        return self.data.get('status').get('value') == 'pending'
+    
     def _race_in_progress(self):
         return self.data.get('status').get('value') in ('pending', 'in_progress')
