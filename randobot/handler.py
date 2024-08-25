@@ -891,7 +891,7 @@ class RandoHandler(RaceHandler):
             
             if len(args) == 2 and args[1] == "--withpassword":
                 self.state['password_active'] = True
-            else: 
+            elif len(args) == 2: 
                 await self.send_message(
                     'Sorry %(reply_to)s, that is not the correct syntax. '
                     'The syntax is "!seed presetName {--withpassword}'
@@ -966,6 +966,10 @@ class RandoHandler(RaceHandler):
             '%(reply_to)s, here is your seed: %(seed_uri)s'
             % {'reply_to': reply_to or 'Okay', 'seed_uri': seed_uri}
         )
+        if self.state.get('password_active'):
+            await self.send_message(
+                'Please note that this seed is password protected. You will receive the password to start a file ingame as soon as the countdown starts.'
+            )
         await self.set_bot_raceinfo(seed_uri)
         if self.state.get('pinned_msg'):
             await self.unpin_message(self.state['pinned_msg'])
