@@ -157,8 +157,8 @@ class RandoHandler(RaceHandler):
             self.state['password_active'] = False
         if 'password_published' not in self.state:
             self.state['password_published'] = False
-        if 'password_retry' not in self.state:
-            self.state['password_retry'] = 0
+        if 'password_retrieval_failed' not in self.state:
+            self.state['password_retrieval_failed'] = False
 
 
     async def end(self):
@@ -823,7 +823,7 @@ class RandoHandler(RaceHandler):
                         'the race room info up top as the countdown starts.'
                     )
             elif args[0] == 'get':
-                if self.state['password_retry'] > 2:
+                if self.state['password_retrieval_failed']:
                     seed_password_acquired = await self.load_seed_password(manual=True)            
                     if seed_password_acquired == False:
                         resp = 'Sorry, password could not be retrieved. Please try again in a few minutes.'
@@ -1001,20 +1001,18 @@ class RandoHandler(RaceHandler):
 
     async def load_seed_password(self, manual=False):
         seed_password = self.zsr.get_password(self.state['seed_id'])
-        if seed_password == None:
+        if seed_password is None:
             if manual:
                 return False
-            elif self.state['password_retry'] > 2:
+            else:
+                self.state['password_retrieval_failed'] = True
                 await self.send_message(
                     'Sorry, but it looks like the password for this seed cannot be retrieved.'
                     'Please wait a few minutes and try manually before race start using !password get'
                 )
-            else: 
-                self.state['password_retry'] +=1
-                await sleep(120)
-                await self.load_seed_password()
         else:
             self.state['seed_password'] = seed_password
+            self.state['password_retrieval_failed'] = False
             if manual:
                 return True
 
