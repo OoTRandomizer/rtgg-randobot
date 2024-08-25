@@ -199,8 +199,7 @@ class ZSR:
                 
                 data.raise_for_status()
                 
-                data = data.json()
-                password_notes = json.loads(data.get('pw'))
+                password_notes = data.json().get('pw')
                 
                 return ' '.join(
                     self.notes_map.get(item, item)
