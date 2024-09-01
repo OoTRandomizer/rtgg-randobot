@@ -990,7 +990,8 @@ class RandoHandler(RaceHandler):
                 await self.check_seed_status()
         elif status == 1:
             await self.load_seed_hash()
-            await self.load_seed_password()            
+            if self.state.get('password_active'):
+                await self.load_seed_password()            
         elif status >= 2:
             self.state['seed_id'] = None
             await self.send_message(
