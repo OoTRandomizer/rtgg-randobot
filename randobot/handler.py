@@ -57,6 +57,7 @@ def parse_duration(args, default):
             arg = arg[len(match.group(0)):]
     return duration
 
+
 class RandoHandler(RaceHandler):
     """
     RandoBot race handler. Generates seeds, presets, and frustration.
@@ -86,10 +87,10 @@ class RandoHandler(RaceHandler):
         goal_is_custom = self.data.get('goal', {}).get('custom', False)
         if goal_is_custom:
             if await self.midos_house.handles_custom_goal(goal_name):
-                return True # handled by Mido
+                return True  # handled by Mido
         else:
             if goal_name in ('Random settings league', 'Triforce Blitz'):
-                return True # handled by Mido
+                return True  # handled by Mido
         return await super().should_stop()
 
     async def begin(self):
@@ -155,7 +156,6 @@ class RandoHandler(RaceHandler):
         if 'password_retrieval_failed' not in self.state:
             self.state['password_retrieval_failed'] = False
 
-
     async def end(self):
         if self.state.get('pinned_msg'):
             await self.unpin_message(self.state['pinned_msg'])
@@ -180,10 +180,10 @@ class RandoHandler(RaceHandler):
                 'seed_url': self.seed_url % self.state['seed_id'],
             })
             await self.send_message(
-                    'This seed is password protected. To start a file, enter this password on the file select screen:\n'
-                    '%(seed_password)s\nYou are allowed to enter the password before the race starts.'
-                    % {'seed_password': self.state['seed_password']}
-                )
+                'This seed is password protected. To start a file, enter this password on the file select screen:\n'
+                '%(seed_password)s\nYou are allowed to enter the password before the race starts.'
+                % {'seed_password': self.state['seed_password']}
+            )
             self.state['password_published'] = True
         if self._race_in_progress() and self.state.get('pinned_msg'):
             await self.unpin_message(self.state['pinned_msg'])
@@ -198,7 +198,7 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
-        
+
         draft = self.state.get('draft_data')
 
         # Handle valid arguments.
@@ -218,7 +218,7 @@ class RandoHandler(RaceHandler):
                 draft.update({
                     'enabled': True,
                     'race_type': args[0]
-                    })
+                })
                 await self.send_message(
                     'Welcome to OoTR Draft Mode! '
                     'You can disable Draft Mode with !s7 cancel.'
@@ -244,14 +244,14 @@ class RandoHandler(RaceHandler):
                         f'Use !seed 15 minutes prior to race start for a seed.'
                     )
                     return
-                    
+
                 entrants = await self.determine_higher_seed()
 
                 # If we can't seed players, exit Draft Mode.
                 if len(entrants) < 2:
                     await self.send_message(
-                            'Error fetching racer data. Exiting Draft Mode...'
-                        ),
+                        'Error fetching racer data. Exiting Draft Mode...'
+                    ),
                     await self.ex_s7(['cancel'], message)
                     return
                 await self.send_message(
@@ -335,11 +335,11 @@ class RandoHandler(RaceHandler):
         draft = self.state.get('draft_data')
         if self._race_in_progress() or not draft.get('status') == 'select_order':
             return
-        
+
         reply_to = message.get('user', {}).get('name')
         racer = draft.get('racers')
 
-        # Compare sender to draft_data 
+        # Compare sender to draft_data
         if racer[0].get('name') != reply_to:
             return
         draft.update({'current_selector': racer[0].get('name')})
@@ -363,11 +363,11 @@ class RandoHandler(RaceHandler):
         draft = self.state.get('draft_data')
         if self._race_in_progress() or not draft.get('status') == 'select_order':
             return
-        
+
         reply_to = message.get('user', {}).get('name')
         racer = draft.get('racers')
 
-        # Compare sender to draft_data 
+        # Compare sender to draft_data
         if racer[0].get('name') != reply_to:
             return
         draft.update({'current_selector': racer[1].get('name')})
@@ -381,7 +381,7 @@ class RandoHandler(RaceHandler):
             'Use !skip to avoid removing a setting.'
         )
         draft.update({'status': 'ban'})
-            
+
     async def ex_ban(self, args, message):
         """
         Handles !ban commands.
@@ -391,7 +391,7 @@ class RandoHandler(RaceHandler):
         draft = self.state.get('draft_data')
         if self._race_in_progress() or draft.get('status') != 'ban':
             return
-        
+
         reply_to = message.get('user', {}).get('name')
         racer = draft.get('racers')
         major_pool = draft.get('available_settings').get('major')
@@ -443,7 +443,7 @@ class RandoHandler(RaceHandler):
         draft = self.state.get('draft_data')
         if self._race_in_progress() or draft.get('status') != 'ban':
             return
-        
+
         reply_to = message.get('user', {}).get('name')
         racer = draft.get('racers')
 
@@ -804,7 +804,7 @@ class RandoHandler(RaceHandler):
         await self.send_presets(True)
 
     @monitor_cmd
-    async def ex_password(self, args, message): 
+    async def ex_password(self, args, message):
         if len(args) == 1 and args[0] in ('on', 'off', 'get'):
             if args[0] == 'on':
                 if self.state['password_active']:
@@ -819,12 +819,12 @@ class RandoHandler(RaceHandler):
                     )
             elif args[0] == 'get':
                 if self.state['password_retrieval_failed']:
-                    seed_password_acquired = await self.load_seed_password(manual=True)            
+                    seed_password_acquired = await self.load_seed_password(manual=True)
                     if seed_password_acquired == False:
                         resp = 'Sorry, password could not be retrieved. Please try again in a few minutes.'
                     else:
                         resp = 'The password has been acquired successfully. You may start the race now.'
-                else: 
+                else:
                     resp = 'Manual password retrieval is only available if automated retrieval has not been successful before.'
             else:  # args[0] == 'off'
                 if not self.state['password_active']:
@@ -888,7 +888,7 @@ class RandoHandler(RaceHandler):
 
         if len(args) > 0:
             preset = args[0]
-            
+
             if len(args) == 2:
                 if args[1] == "--withpassword":
                     self.state['password_active'] = True
@@ -899,7 +899,7 @@ class RandoHandler(RaceHandler):
                         % {'reply_to': reply_to or 'friend'}
                     )
                     return
-            
+
         draft = self.state.get('draft_data')
         password = self.state.get('password_active')
 
@@ -938,7 +938,7 @@ class RandoHandler(RaceHandler):
                 settings=self.patch_settings(),
                 password=password
             )
-            return 
+            return
         await self.roll(
             preset=preset,
             encrypt=encrypt,
@@ -991,14 +991,13 @@ class RandoHandler(RaceHandler):
         elif status == 1:
             await self.load_seed_hash()
             if self.state.get('password_active'):
-                await self.load_seed_password()            
+                await self.load_seed_password()
         elif status >= 2:
             self.state['seed_id'] = None
             await self.send_message(
                 'Sorry, but it looks like the seed failed to generate. Use '
                 '!seed to try again.'
             )
-            
 
     async def load_seed_password(self, manual=False):
         seed_password = self.zsr.get_password(self.state['seed_id'])
@@ -1016,7 +1015,6 @@ class RandoHandler(RaceHandler):
             self.state['password_retrieval_failed'] = False
             if manual:
                 return True
-
 
     async def load_seed_hash(self):
         seed_hash = self.zsr.get_hash(self.state['seed_id'])
@@ -1047,7 +1045,7 @@ class RandoHandler(RaceHandler):
                 for place in placements:
                     if entrant.get('user').get('id') == place.get('id'):
                         entrants.append({'name': entrant.get('user').get('name'), 'rank': place.get('place')})
-            return sorted(entrants, key=lambda entrant: entrant.get('rank'))    
+            return sorted(entrants, key=lambda entrant: entrant.get('rank'))
         # Return list sorted by RaceTime points
         elif self.state.get('draft_data').get('race_type') == 'draft':
             for entrant in self.data.get('entrants'):
@@ -1117,6 +1115,6 @@ class RandoHandler(RaceHandler):
 
     def _race_pending(self):
         return self.data.get('status').get('value') == 'pending'
-    
+
     def _race_in_progress(self):
         return self.data.get('status').get('value') in ('pending', 'in_progress')

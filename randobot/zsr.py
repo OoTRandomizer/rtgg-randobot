@@ -168,26 +168,26 @@ class ZSR:
             self.hash_map.get(item, item)
             for item in settings['file_hash']
         )
-    
+
     def load_qualifier_placements(self):
         """
         Returns qualifier placement data for Tournament matches.
         """
         placement = requests.get(self.qualifier_placement_endpoint).json()
         return placement
-    
+
     def load_available_settings(self):
         """
         Settings pool for Draft Mode.
         """
         pool = requests.get(self.draft_settings_pool_endpoint).json()
         return pool
-    
+
     def get_password(self, seed_id, retries=3, delay=2):
         """
         Grab password for seed with active password.
-        
-        Tries to retrieve the password a specified number of times, 
+
+        Tries to retrieve the password a specified number of times,
         with a delay between attempts. Returns None if unsuccessful.
         """
         for attempt in range(retries):
@@ -196,11 +196,11 @@ class ZSR:
                     'id': seed_id,
                     'key': self.ootr_api_key,
                 }, timeout=5)
-                
+
                 data.raise_for_status()
-                
+
                 password_notes = data.json().get('pw')
-                
+
                 return ' '.join(
                     self.notes_map.get(item, item)
                     for item in password_notes
