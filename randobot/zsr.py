@@ -13,8 +13,6 @@ class ZSR:
     details_endpoint = 'https://ootrandomizer.com/api/v2/seed/details'
     password_endpoint = 'https://ootrandomizer.com/api/v2/seed/pw'
     version_endpoint = 'https://ootrandomizer.com/api/version'
-    preset_endpoint = 'https://ootrandomizer.com/rtgg/ootr_presets.json'
-    preset_dev_endpoint = 'https://ootrandomizer.com/rtgg/ootr_presets_dev.json'
     settings_endpoint = 'https://raw.githubusercontent.com/TestRunnerSRL/OoT-Randomizer/release/data/presets_default.json'
     settings_dev_endpoint = 'https://raw.githubusercontent.com/TestRunnerSRL/OoT-Randomizer/Dev/data/presets_default.json'
     qualifier_placement_endpoint = 'https://ootrandomizer.com/tournament/seedsOnly'
@@ -74,15 +72,13 @@ class ZSR:
         """
         Load and return available seed presets.
         """
-        presets = requests.get(self.preset_endpoint).json()
         settings = requests.get(self.settings_endpoint).json()
         return {
-            key: {
-                'full_name': value['fullName'],
-                'settings': settings.get(value['fullName']),
+            min(settings[preset]['aliases'], key=len): {
+                'full_name': preset,
+                'settings': settings.get(preset),
             }
-            for key, value in presets.items()
-            if value['fullName'] in settings
+            for preset in settings
         }
 
     def load_presets_dev(self):
