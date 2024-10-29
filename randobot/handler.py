@@ -113,7 +113,7 @@ class RandoHandler(RaceHandler):
                                 name='preset',
                                 label='Preset',
                                 options={key: value['full_name'] for key, value in self.zsr.presets.items()},
-                                default='weekly',
+                                default='s8',
                             ),
                             msg_actions.BoolInput(
                                 name='--withpassword',
@@ -132,7 +132,7 @@ class RandoHandler(RaceHandler):
                                 name='preset',
                                 label='Preset',
                                 options={key: value['full_name'] for key, value in self.zsr.presets_dev.items()},
-                                default='weekly',
+                                default='s8',
                             ),
                             msg_actions.BoolInput(
                                 name='--withpassword',
@@ -889,7 +889,7 @@ class RandoHandler(RaceHandler):
         valid.
         """
         reply_to = message.get('user', {}).get('name')
-        preset = 'weekly'
+        preset = 's8'
 
         if len(args) > 0:
             preset = args[0]
