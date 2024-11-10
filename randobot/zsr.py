@@ -64,34 +64,24 @@ class ZSR:
     def __init__(self, ootr_api_key):
         self.ootr_api_key = ootr_api_key
         self.presets = self.load_presets()
-        self.presets_dev = self.load_presets_dev()
+        self.presets_dev = self.load_presets(dev=True)
         self.last_known_dev_version = None
         self.get_latest_dev_version()
 
-    def load_presets(self):
+    def load_presets(self, dev=False):
         """
         Load and return available seed presets.
         """
         settings = requests.get(self.settings_endpoint).json()
+        if dev:
+            settings = requests.get(self.settings_dev_endpoint).json()
+
         return {
             min(settings[preset]['aliases'], key=len): {
                 'full_name': preset,
                 'settings': settings.get(preset),
             }
             for preset in settings
-        }
-
-    def load_presets_dev(self):
-        """
-        Load and return available seed presets for dev.
-        """
-        settings_dev = requests.get(self.settings_dev_endpoint).json()
-        return {
-            min(settings_dev[preset]['aliases'], key=len): {
-                'full_name': preset,
-                'settings': settings_dev.get(preset)
-            }
-            for preset in settings_dev
         }
 
     def get_latest_dev_version(self):
@@ -112,7 +102,7 @@ class ZSR:
         if dev:
             latest_dev_version, changed = self.get_latest_dev_version()
             if changed:
-                self.presets_dev = self.load_presets_dev()
+                self.presets_dev = self.load_presets(dev)
             # Roll with provided preset for non-draft races.
             if preset is not None:
                 req_body = json.dumps(self.presets_dev[preset]['settings'])
