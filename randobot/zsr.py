@@ -72,9 +72,10 @@ class ZSR:
         """
         Load and return available seed presets.
         """
-        settings = requests.get(self.settings_endpoint).json()
         if dev:
             settings = requests.get(self.settings_dev_endpoint).json()
+        else:
+            settings = requests.get(self.settings_endpoint).json()
 
         return {
             min(settings[preset]['aliases'], key=len): {
@@ -102,7 +103,7 @@ class ZSR:
         if dev:
             latest_dev_version, changed = self.get_latest_dev_version()
             if changed:
-                self.presets_dev = self.load_presets(dev)
+                self.presets_dev = self.load_presets(dev=True)
             # Roll with provided preset for non-draft races.
             if preset is not None:
                 req_body = json.dumps(self.presets_dev[preset]['settings'])
