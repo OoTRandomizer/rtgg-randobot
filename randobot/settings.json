@@ -1,0 +1,1787 @@
+{
+    "reachable_locations": {
+        "name": "Guarantee Reachable Locations",
+        "options": {
+            "all": {
+                "name": "All Locations",
+                "gui_setting": { "reachable_locations": "all" },
+                "additional_settings": {}
+            },
+            "goals": {
+                "name": "All Goals",
+                "gui_setting": { "reachable_locations": "goals" },
+                "additional_settings": {}
+            },
+            "beatable": {
+                "name": "Required Only",
+                "gui_setting": { "reachable_locations": "beatable" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "bridge": {
+        "name": "Rainbow Bridge Requirement",
+        "options": {
+            "open": {
+                "name": "Always Open",
+                "gui_setting": { "bridge": "open" },
+                "additional_settings": {}
+            },
+            "vanilla": {
+                "name": "Vanilla Requirements",
+                "gui_setting": { "bridge": "vanilla" },
+                "additional_settings": {}
+            },
+            "stones": {
+                "name": "All Spiritual Stones",
+                "gui_setting": { "bridge": "stones" },
+                "additional_settings": { "bridge_stones": 3 }
+            },
+            "medallions": {
+                "name": "All Medallions",
+                "gui_setting": {
+                    "bridge": "medallions"
+                },
+                "additional_settings": {"bridge_medallions": 6}
+            },
+            "dungeons": {
+                "name": "All Dungeons",
+                "gui_setting": { "bridge": "dungeons" },
+                "additional_settings": {"bridge_rewards": 9}
+            }
+        }
+    },
+    "lacs_condition": {
+        "name": "LACS Condition",
+        "options": {
+            "vanilla": {
+                "name": "Vanilla",
+                "gui_setting": { "lacs_condition": "vanilla" },
+                "additional_settings": {}
+            },
+            "stones": {
+                "name": "All Spiritual Stones",
+                "gui_setting": { "lacs_condition": "stones" },
+                "additional_settings": {"lacs_stones": 3}
+            },
+            "medallions": {
+                "name": "All Medallions",
+                "gui_setting": {
+                    "lacs_condition": "medallions"
+                    
+                },
+                "additional_settings": {"lacs_medallions": 6}
+            },
+            "dungeons": {
+                "name": "All Dungeons",
+                "gui_setting": {
+                    "lacs_condition": "dungeons"
+                    
+                },
+                "additional_settings": {"lacs_rewards": 9}
+            }
+        }
+    },
+    "trials": {
+        "name": "Ganon's Trial Count",
+        "options": {
+            "0": {
+                "name": "No Trials",
+                "gui_setting": { "trials": 0 },
+                "additional_settings": {}
+            },
+            "3": {
+                "name": "3 Trials",
+                "gui_setting": { "trials": 3 },
+                "additional_settings": {}
+            },
+            "6": {
+                "name": "All Trials",
+                "gui_setting": { "trials": 6 },
+                "additional_settings": {}
+            },
+            "random": {
+                "name": "Random Amount of Trials",
+                "gui_setting": { "trials_random": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_ganon_bosskey": {
+        "name": "Ganon's Boss Key",
+        "options": {
+            "remove": {
+                "name": "Remove (Keysy)",
+                "gui_setting": { "shuffle_ganon_bosskey": "remove" },
+                "additional_settings": {}
+            },
+            "vanilla": {
+                "name": "Vanilla Location",
+                "gui_setting": { "shuffle_ganon_bosskey": "vanilla" },
+                "additional_settings": {}
+            },
+            "dungeon": {
+                "name": "Own Dungeon",
+                "gui_setting": { "shuffle_ganon_bosskey": "dungeon" },
+                "additional_settings": {}
+            },
+            "overworld": {
+                "name": "Overworld Only",
+                "gui_setting": { "shuffle_ganon_bosskey": "overworld" },
+                "additional_settings": {}
+            },
+            "any_dungeon": {
+                "name": "Any Dungeon",
+                "gui_setting": { "shuffle_ganon_bosskey": "any_dungeon" },
+                "additional_settings": {}
+            },
+            "keysanity": {
+                "name": "Anywhere (Keysanity)",
+                "gui_setting": { "shuffle_ganon_bosskey": "keysanity" },
+                "additional_settings": {}
+            },
+            "on_lacs": {
+                "name": "Light Arrow Cutscene",
+                "gui_setting": { "shuffle_ganon_bosskey": "on_lacs" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "open_forest": {
+        "name": "Forest",
+        "options": {
+            "open": {
+                "name": "Open Forest",
+                "gui_setting": { "open_forest": "open" },
+                "additional_settings": {}
+            },
+            "closed_deku": {
+                "name": "Closed Deku",
+                "gui_setting": { "open_forest": "closed_deku" },
+                "additional_settings": {}
+            },
+            "closed": {
+                "name": "Closed Forest",
+                "gui_setting": { "open_forest": "closed" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "open_kakariko": {
+        "name": "Kakariko's Gate",
+        "options": {
+            "open": {
+                "name": "Open Gate",
+                "gui_setting": { "open_kakariko": "open" },
+                "additional_settings": {}
+            },
+            "closed": {
+                "name": "Closed Gate",
+                "gui_setting": { "open_kakariko": "closed" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "open_door_of_time": {
+        "name": "Open Door of Time",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "open_door_of_time": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "open_door_of_time": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "zora_fountain": {
+        "name": "Zora's Fountain",
+        "options": {
+            "closed": {
+                "name": "Default Behavior (Closed)",
+                "gui_setting": { "zora_fountain": "closed" },
+                "additional_settings": {}
+            },
+            "adult": {
+                "name": "Open For Adult",
+                "gui_setting": { "zora_fountain": "adult" },
+                "additional_settings": {}
+            },
+            "open": {
+                "name": "Always Open",
+                "gui_setting": { "zora_fountain": "open" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "gerudo_fortress": {
+        "name": "Gerudo's Fortress",
+        "options": {
+            "normal": {
+                "name": "Default Behavior",
+                "gui_setting": { "gerudo_fortress": "normal" },
+                "additional_settings": {}
+            },
+            "fast": {
+                "name": "Rescue One Carpenter",
+                "gui_setting": { "gerudo_fortress": "fast" },
+                "additional_settings": {}
+            },
+            "open": {
+                "name": "Open Gerudo's Fortress",
+                "gui_setting": { "gerudo_fortress": "open" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "dungeon_shortcuts_choice": {
+        "name": "Dungeon Boss Shortcuts Mode",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "dungeon_shortcuts_choice": "off" },
+                "additional_settings": {}
+            },
+            "all": {
+                "name": "All Dungeons",
+                "gui_setting": { "dungeon_shortcuts_choice": "all" },
+                "additional_settings": {}
+            },
+            "random": {
+                "name": "Random Dungeons",
+                "gui_setting": { "dungeon_shortcuts_choice": "random" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "starting_age": {
+        "name": "Starting Age",
+        "options": {
+            "child": {
+                "name": "Child",
+                "gui_setting": { "starting_age": "child" },
+                "additional_settings": {}
+            },
+            "adult": {
+                "name": "Adult",
+                "gui_setting": { "starting_age": "adult" },
+                "additional_settings": {}
+            },
+            "random": {
+                "name": "Random",
+                "gui_setting": { "starting_age": "random" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "mq_dungeons_mode": {
+        "name": "MQ Dungeon Mode",
+        "options": {
+            "vanilla": {
+                "name": "All Vanilla",
+                "gui_setting": { "mq_dungeons_mode": "vanilla" },
+                "additional_settings": {}
+            },
+            "mq": {
+                "name": "All MQ Dungeons",
+                "gui_setting": { "mq_dungeons_mode": "mq" },
+                "additional_settings": {}
+            },
+            "random": {
+                "name": "Completely Random",
+                "gui_setting": { "mq_dungeons_mode": "random" },
+                "additional_settings": {}
+            },
+            "count": {
+                "name": "3 MQ Dungeons",
+                "gui_setting": {
+                    "mq_dungeons_mode": "count"
+                    
+                },
+                "additional_settings": {"mq_dungeons_count": 3}
+            }
+        }
+    },
+    "empty_dungeons_mode": {
+        "name": "Pre-completed Dungeons Mode",
+        "options": {
+            "none": {
+                "name": "Off",
+                "gui_setting": { "empty_dungeons_mode": "none" },
+                "additional_settings": {}
+            },
+            "count": {
+                "name": "2 Pre-completed Dungeons",
+                "gui_setting": {
+                    "empty_dungeons_mode": "count"
+                },
+                "additional_settings": {"empty_dungeons_count": 2}
+            }
+        }
+    },
+    "shuffle_interior_entrances": {
+        "name": "Shuffle Interior Entrances",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_interior_entrances": "off" },
+                "additional_settings": {}
+            },
+            "simple": {
+                "name": "Simple Interiors",
+                "gui_setting": { "shuffle_interior_entrances": "simple" },
+                "additional_settings": {}
+            },
+            "all": {
+                "name": "All Interiors",
+                "gui_setting": { "shuffle_interior_entrances": "all" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_hideout_entrances": {
+        "name": "Shuffle Thieve's Hideout Entrances",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_hideout_entrances": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "shuffle_hideout_entrances": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_grotto_entrances": {
+        "name": "Shuffle Grotto Entrances",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_grotto_entrances": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "shuffle_grotto_entrances": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_dungeon_entrances": {
+        "name": "Shuffle Dungeon Entrances",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_dungeon_entrances": "off" },
+                "additional_settings": {}
+            },
+            "simple": {
+                "name": "Dungeon",
+                "gui_setting": { "shuffle_dungeon_entrances": "simple" },
+                "additional_settings": {}
+            },
+            "all": {
+                "name": "Dungeon and Ganon",
+                "gui_setting": { "shuffle_dungeon_entrances": "all" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_dungeon_rewards": {
+        "name": "Shuffle Dungeon Rewards",
+        "options": {
+            "vanilla": {
+                "name": "Vanilla Locations",
+                "gui_setting": { "shuffle_dungeon_rewards": "vanilla" },
+                "additional_settings": {}
+            },
+            "reward": {
+                "name": "Dungeon Reward Locations",
+                "gui_setting": { "shuffle_dungeon_rewards": "reward" },
+                "additional_settings": {}
+            },
+            "dungeon": {
+                "name": "Own Dungeon",
+                "gui_setting": { "shuffle_dungeon_rewards": "dungeon" },
+                "additional_settings": {}
+            },
+            "regional": {
+                "name": "Regional",
+                "gui_setting": { "shuffle_dungeon_rewards": "regional" },
+                "additional_settings": {}
+            },
+            "overworld": {
+                "name": "Overworld Only",
+                "gui_setting": { "shuffle_dungeon_rewards": "overworld" },
+                "additional_settings": {}
+            },
+            "any_dungeon": {
+                "name": "Any Dungeon",
+                "gui_setting": { "shuffle_dungeon_rewards": "any_dungeon" },
+                "additional_settings": {}
+            },
+            "anywhere": {
+                "name": "Anywhere",
+                "gui_setting": { "shuffle_dungeon_rewards": "anywhere" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_bosskeys": {
+        "name": "Boss Keys",
+        "options": {
+            "remove": {
+                "name": "Remove (Keysy)",
+                "gui_setting": { "shuffle_bosskeys": "remove" },
+                "additional_settings": {}
+            },
+            "vanilla": {
+                "name": "Vanilla Locations",
+                "gui_setting": { "shuffle_bosskeys": "vanilla" },
+                "additional_settings": {}
+            },
+            "dungeon": {
+                "name": "Own Dungeon",
+                "gui_setting": { "shuffle_bosskeys": "dungeon" },
+                "additional_settings": {}
+            },
+            "regional": {
+                "name": "Regional",
+                "gui_setting": {
+                    "shuffle_bosskeys": "regional"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            },
+            "overworld": {
+                "name": "Overworld Only",
+                "gui_setting": {
+                    "shuffle_bosskeys": "overworld"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            },
+            "any_dungeon": {
+                "name": "Any Dungeon",
+                "gui_setting": {
+                    "shuffle_bosskeys": "any_dungeon"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            },
+            "keysanity": {
+                "name": "Anywhere (Keysanity)",
+                "gui_setting": {
+                    "shuffle_bosskeys": "keysanity"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            }
+        }
+    },
+    "shuffle_smallkeys": {
+        "name": "Small Keys",
+        "options": {
+            "remove": {
+                "name": "Remove (Keysy)",
+                "gui_setting": { "shuffle_smallkeys": "remove" },
+                "additional_settings": {}
+            },
+            "vanilla": {
+                "name": "Vanilla Locations",
+                "gui_setting": { "shuffle_smallkeys": "vanilla" },
+                "additional_settings": {}
+            },
+            "dungeon": {
+                "name": "Own Dungeon",
+                "gui_setting": { "shuffle_smallkeys": "dungeon" },
+                "additional_settings": {}
+            },
+            "regional": {
+                "name": "Regional",
+                "gui_setting": {
+                    "shuffle_smallkeys": "regional"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            },
+            "overworld": {
+                "name": "Overworld Only",
+                "gui_setting": {
+                    "shuffle_smallkeys": "overworld"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            },
+            "any_dungeon": {
+                "name": "Any Dungeon",
+                "gui_setting": {
+                    "shuffle_smallkeys": "any_dungeon"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            },
+            "keysanity": {
+                "name": "Anywhere (Keysanity)",
+                "gui_setting": {
+                    "shuffle_smallkeys": "keysanity"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            }
+        }
+    },
+    "shuffle_hideoutkeys": {
+        "name": "Thieve's Hideout Keys",
+        "options": {
+            "vanilla": {
+                "name": "Vanilla Locations",
+                "gui_setting": { "shuffle_hideoutkeys": "vanilla" },
+                "additional_settings": {}
+            },
+            "fortress": {
+                "name": "Gerudo Fortress Region",
+                "gui_setting": {
+                    "shuffle_hideoutkeys": "fortress"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            },
+            "regional": {
+                "name": "Regional",
+                "gui_setting": {
+                    "shuffle_hideoutkeys": "regional"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            },
+            "overworld": {
+                "name": "Overworld Only",
+                "gui_setting": {
+                    "shuffle_hideoutkeys": "overworld"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            },
+            "any_dungeon": {
+                "name": "Any Dungeon",
+                "gui_setting": {
+                    "shuffle_hideoutkeys": "any_dungeon"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            },
+            "keysanity": {
+                "name": "Anywhere (Keysanity)",
+                "gui_setting": {
+                    "shuffle_hideoutkeys": "keysanity"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            }
+        }
+    },
+    "shuffle_tcgkeys": {
+        "name": "Treasure Chest Game Keys",
+        "options": {
+            "remove": {
+                "name": "Remove (Keysy)",
+                "gui_setting": { "shuffle_tcgkeys": "remove" },
+                "additional_settings": {}
+            },
+            "vanilla": {
+                "name": "Vanilla Locations",
+                "gui_setting": { "shuffle_tcgkeys": "vanilla" },
+                "additional_settings": {}
+            },
+            "regional": {
+                "name": "Regional",
+                "gui_setting": {
+                    "shuffle_tcgkeys": "regional"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            },
+            "overworld": {
+                "name": "Overworld Only",
+                "gui_setting": {
+                    "shuffle_tcgkeys": "overworld"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            },
+            "any_dungeon": {
+                "name": "Any Dungeon",
+                "gui_setting": {
+                    "shuffle_tcgkeys": "any_dungeon"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            },
+            "keysanity": {
+                "name": "Anywhere (Keysanity)",
+                "gui_setting": {
+                    "shuffle_tcgkeys": "keysanity"
+                },
+                "additional_settings": {"key_appearance_match_dungeon": true}
+            }
+        }
+    },
+    "key_rings_choice": {
+        "name": "Key Rings Mode",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "key_rings_choice": "off" },
+                "additional_settings": {}
+            },
+            "all": {
+                "name": "All Dungeons",
+                "gui_setting": { "key_rings_choice": "all" },
+                "additional_settings": {}
+            },
+            "random": {
+                "name": "Random Selection",
+                "gui_setting": { "key_rings_choice": "random" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "keyring_give_bk": {
+        "name": "Key Rings give Boss Keys",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "keyring_give_bk": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "keyring_give_bk": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_silver_rupees": {
+        "name": "Shuffle Silver Rupees",
+        "options": {
+            "remove": {
+                "name": "Remove",
+                "gui_setting": { "shuffle_silver_rupees": "remove" },
+                "additional_settings": {}
+            },
+            "vanilla": {
+                "name": "Vanilla Locations",
+                "gui_setting": { "shuffle_silver_rupees": "vanilla" },
+                "additional_settings": {}
+            },
+            "dungeon": {
+                "name": "Own Dungeon",
+                "gui_setting": { "shuffle_silver_rupees": "dungeon" },
+                "additional_settings": {}
+            },
+            "regional": {
+                "name": "Regional",
+                "gui_setting": { "shuffle_silver_rupees": "regional" },
+                "additional_settings": {}
+            },
+            "overworld": {
+                "name": "Overworld Only",
+                "gui_setting": { "shuffle_silver_rupees": "overworld" },
+                "additional_settings": {}
+            },
+            "any_dungeon": {
+                "name": "Any Dungeon",
+                "gui_setting": { "shuffle_silver_rupees": "any_dungeon" },
+                "additional_settings": {}
+            },
+            "anywhere": {
+                "name": "Anywhere",
+                "gui_setting": { "shuffle_silver_rupees": "anywhere" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "silver_rupee_pouches_choice": {
+        "name": "Silver Rupee Pouches Mode",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "silver_rupee_pouches_choice": "off" },
+                "additional_settings": {}
+            },
+            "all": {
+                "name": "All Puzzles",
+                "gui_setting": { "silver_rupee_pouches_choice": "all" },
+                "additional_settings": {}
+            },
+            "random": {
+                "name": "Random Puzzles",
+                "gui_setting": { "silver_rupee_pouches_choice": "random" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_mapcompass": {
+        "name": "Maps & Compasses",
+        "options": {
+            "remove": {
+                "name": "Remove",
+                "gui_setting": { "shuffle_mapcompass": "remove" },
+                "additional_settings": {}
+            },
+            "startwith": {
+                "name": "Start With",
+                "gui_setting": { "shuffle_mapcompass": "startwith" },
+                "additional_settings": {}
+            },
+            "vanilla": {
+                "name": "Vanilla Locations",
+                "gui_setting": { "shuffle_mapcompass": "vanilla" },
+                "additional_settings": {}
+            },
+            "dungeon": {
+                "name": "Own Dungeon",
+                "gui_setting": { "shuffle_mapcompass": "dungeon" },
+                "additional_settings": {}
+            },
+            "regional": {
+                "name": "Regional",
+                "gui_setting": { "shuffle_mapcompass": "regional" },
+                "additional_settings": {}
+            },
+            "overworld": {
+                "name": "Overworld Only",
+                "gui_setting": { "shuffle_mapcompass": "overworld" },
+                "additional_settings": {}
+            },
+            "any_dungeon": {
+                "name": "Any Dungeon",
+                "gui_setting": { "shuffle_mapcompass": "any_dungeon" },
+                "additional_settings": {}
+            },
+            "keysanity": {
+                "name": "Anywhere",
+                "gui_setting": { "shuffle_mapcompass": "keysanity" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "enhance_map_compass": {
+        "name": "Maps and Compasses Give Information",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "enhance_map_compass": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "enhance_map_compass": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_bosses": {
+        "name": "Shuffle Boss Entrances",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_bosses": "off" },
+                "additional_settings": {}
+            },
+            "limited": {
+                "name": "Age-Restricted",
+                "gui_setting": { "shuffle_bosses": "limited" },
+                "additional_settings": {}
+            },
+            "full": {
+                "name": "Full",
+                "gui_setting": { "shuffle_bosses": "full" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_overworld_entrances": {
+        "name": "Shuffle Overworld Entrances",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_overworld_entrances": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "shuffle_overworld_entrances": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_gerudo_valley_river_exit": {
+        "name": "Shuffle Gerudo Valley River Exit",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_gerudo_valley_river_exit": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "shuffle_gerudo_valley_river_exit": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "owl_drops": {
+        "name": "Randomize Owl Drops",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "owl_drops": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "owl_drops": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "warp_songs": {
+        "name": "Randomize Warp Song Destinations",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "warp_songs": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "warp_songs": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "spawn_positions": {
+        "name": "Randomize Overworld Spawns",
+        "options": {
+            "child": {
+                "name": "Child",
+                "gui_setting": { "spawn_positions": ["child"] },
+                "additional_settings": {}
+            },
+            "adult": {
+                "name": "Adult",
+                "gui_setting": { "spawn_positions": ["adult"] },
+                "additional_settings": {}
+            },
+            "both": {
+                "name": "Both",
+                "gui_setting": { "spawn_positions": ["child", "adult"] },
+                "additional_settings": {}
+            }
+        }
+    },
+    "free_bombchu_drops": {
+        "name": "Add Bombchu Bag and Drops",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "free_bombchu_drops": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "free_bombchu_drops": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "one_item_per_dungeon": {
+        "name": "Dungeons Have One Major Item",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "one_item_per_dungeon": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "one_item_per_dungeon": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_song_items": {
+        "name": "Shuffle Songs",
+        "options": {
+            "song": {
+                "name": "Song Locations",
+                "gui_setting": { "shuffle_song_items": "song" },
+                "additional_settings": {}
+            },
+            "dungeon": {
+                "name": "Dungeon Rewards",
+                "gui_setting": { "shuffle_song_items": "dungeon" },
+                "additional_settings": {}
+            },
+            "any": {
+                "name": "Anywhere",
+                "gui_setting": { "shuffle_song_items": "any" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shopsanity": {
+        "name": "Shopsanity",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shopsanity": "off" },
+                "additional_settings": {}
+            },
+            "0": {
+                "name": "0 Items Per Shop",
+                "gui_setting": { "shopsanity": "0" },
+                "additional_settings": {}
+            },
+            "1": {
+                "name": "1 Item Per Shop",
+                "gui_setting": {
+                    "shopsanity": "1"
+                },
+                "additional_settings": {"shopsanity_prices": "affordable"}
+            },
+            "2": {
+                "name": "2 Items Per Shop",
+                "gui_setting": {
+                    "shopsanity": "2"
+                },
+                "additional_settings": {"shopsanity_prices": "affordable"}
+            },
+            "3": {
+                "name": "3 Items Per Shop",
+                "gui_setting": {
+                    "shopsanity": "3"
+                },
+                "additional_settings": {"shopsanity_prices": "affordable"}
+            },
+            "4": {
+                "name": "4 Items Per Shop",
+                "gui_setting": {
+                    "shopsanity": "4"
+                },
+                "additional_settings": {"shopsanity_prices": "affordable"}
+            }
+        }
+    },
+    "tokensanity": {
+        "name": "Tokensanity",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "tokensanity": "off" },
+                "additional_settings": {}
+            },
+            "dungeons": {
+                "name": "Dungeons Only",
+                "gui_setting": { "tokensanity": "dungeons" },
+                "additional_settings": {}
+            },
+            "overworld": {
+                "name": "Overworld Only",
+                "gui_setting": { "tokensanity": "overworld" },
+                "additional_settings": {}
+            },
+            "all": {
+                "name": "All Tokens",
+                "gui_setting": { "tokensanity": "all" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_scrubs": {
+        "name": "Scrub Shuffle",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_scrubs": "off" },
+                "additional_settings": {}
+            },
+            "low": {
+                "name": "On (Affordable)",
+                "gui_setting": { "shuffle_scrubs": "low" },
+                "additional_settings": {}
+            },
+            "regular": {
+                "name": "On (Expensive)",
+                "gui_setting": { "shuffle_scrubs": "regular" },
+                "additional_settings": {}
+            },
+            "random": {
+                "name": "On (Random Prices)",
+                "gui_setting": { "shuffle_scrubs": "random" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_freestanding_items": {
+        "name": "Shuffle Rupees & Hearts",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_freestanding_items": "off" },
+                "additional_settings": {}
+            },
+            "all": {
+                "name": "All",
+                "gui_setting": { "shuffle_freestanding_items": "all" },
+                "additional_settings": {}
+            },
+            "overworld": {
+                "name": "Overworld Only",
+                "gui_setting": { "shuffle_freestanding_items": "overworld" },
+                "additional_settings": {}
+            },
+            "dungeons": {
+                "name": "Dungeons Only",
+                "gui_setting": { "shuffle_freestanding_items": "dungeons" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_pots": {
+        "name": "Shuffle Pots",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_pots": "off" },
+                "additional_settings": {}
+            },
+            "all": {
+                "name": "All",
+                "gui_setting": { "shuffle_pots": "all" },
+                "additional_settings": {}
+            },
+            "overworld": {
+                "name": "Overworld Only",
+                "gui_setting": { "shuffle_pots": "overworld" },
+                "additional_settings": {}
+            },
+            "dungeons": {
+                "name": "Dungeons Only",
+                "gui_setting": { "shuffle_pots": "dungeons" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_crates": {
+        "name": "Shuffle Crates",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_crates": "off" },
+                "additional_settings": {}
+            },
+            "all": {
+                "name": "All",
+                "gui_setting": { "shuffle_crates": "all" },
+                "additional_settings": {}
+            },
+            "overworld": {
+                "name": "Overworld Only",
+                "gui_setting": { "shuffle_crates": "overworld" },
+                "additional_settings": {}
+            },
+            "dungeons": {
+                "name": "Dungeons Only",
+                "gui_setting": { "shuffle_crates": "dungeons" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_cows": {
+        "name": "Shuffle Cows",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_cows": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "shuffle_cows": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_beehives": {
+        "name": "Shuffle Beehives",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_beehives": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "shuffle_beehives": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_wonderitems": {
+        "name": "Shuffle Wonderitems",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_wonderitems": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "shuffle_wonderitems": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_kokiri_sword": {
+        "name": "Shuffle Kokiri Sword",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_kokiri_sword": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "shuffle_kokiri_sword": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_ocarinas": {
+        "name": "Shuffle Ocarinas",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_ocarinas": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "shuffle_ocarinas": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_gerudo_card": {
+        "name": "Shuffle Gerudo Card",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_gerudo_card": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "shuffle_gerudo_card": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_beans": {
+        "name": "Shuffle Beans",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_beans": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "shuffle_beans": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_expensive_merchants": {
+        "name": "Shuffle Expensive Merchants",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_expensive_merchants": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "shuffle_expensive_merchants": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_frog_song_rupees": {
+        "name": "Shuffle Frog Song Rupees",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_frog_song_rupees": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "shuffle_frog_song_rupees": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_individual_ocarina_notes": {
+        "name": "Shuffle Individual Ocarina Notes",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_individual_ocarina_notes": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "shuffle_individual_ocarina_notes": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "shuffle_loach_reward": {
+        "name": "Shuffle Hyrule Loach Reward",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "shuffle_loach_reward": "off" },
+                "additional_settings": {}
+            },
+            "vanilla": {
+                "name": "Vanilla Behavior",
+                "gui_setting": { "shuffle_loach_reward": "vanilla" },
+                "additional_settings": {}
+            },
+            "easy": {
+                "name": "Easier Behavior",
+                "gui_setting": { "shuffle_loach_reward": "easy" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "start_with_rupees": {
+        "name": "Start with Max Rupees",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "start_with_rupees": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "start_with_rupees": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "skip_reward_from_rauru": {
+        "name": "Free Reward from Rauru",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "skip_reward_from_rauru": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "skip_reward_from_rauru": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "no_escape_sequence": {
+        "name": "Skip Tower Escape Sequence",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "no_escape_sequence": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "no_escape_sequence": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "no_guard_stealth": {
+        "name": "Skip Child Stealth",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "no_guard_stealth": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "no_guard_stealth": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "no_epona_race": {
+        "name": "Skip Epona Race",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "no_epona_race": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "no_epona_race": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "skip_some_minigame_phases": {
+        "name": "Skip Some Minigame Phases",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "skip_some_minigame_phases": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "skip_some_minigame_phases": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "complete_mask_quests": {
+        "name": "Complete Mask Quest",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "complete_mask_quests": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "complete_mask_quests": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "fast_chests": {
+        "name": "Fast Chest Cutscenes",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "fast_chests": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "fast_chests": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "free_scarecrow": {
+        "name": "Free Scarecrow's Song",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "free_scarecrow": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "free_scarecrow": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "fast_bunny_hood": {
+        "name": "Fast Bunny Hood",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "fast_bunny_hood": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "fast_bunny_hood": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "plant_beans": {
+        "name": "Plant Magic Beans",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "plant_beans": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "plant_beans": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "chicken_count": {
+        "name": "Cucco Count",
+        "options": {
+            "0": {
+                "name": "0 Cuccos",
+                "gui_setting": { "chicken_count": 0 },
+                "additional_settings": {}
+            },
+            "3": {
+                "name": "3 Cuccos",
+                "gui_setting": { "chicken_count": 3 },
+                "additional_settings": {}
+            },
+            "7": {
+                "name": "7 Cuccos",
+                "gui_setting": { "chicken_count": 7 },
+                "additional_settings": {}
+            }
+        }
+    },
+    "big_poe_count": {
+        "name": "Big Poe Target Count",
+        "options": {
+            "1": {
+                "name": "1 Big Poe",
+                "gui_setting": { "big_poe_count": 1 },
+                "additional_settings": {}
+            },
+            "10": {
+                "name": "10 Big Poes",
+                "gui_setting": { "big_poe_count": 10 },
+                "additional_settings": {}
+            },
+            "random": {
+                "name": "Random Amount",
+                "gui_setting": { "big_poe_count_random": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "ruto_already_f1_jabu": {
+        "name": "Ruto Already at F1",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "ruto_already_f1_jabu": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "ruto_already_f1_jabu": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "ocarina_songs": {
+        "name": "Randomize Ocarina Melodies",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "ocarina_songs": "off" },
+                "additional_settings": {}
+            },
+            "frog": {
+                "name": "Frog Songs Only",
+                "gui_setting": { "ocarina_songs": "frog" },
+                "additional_settings": {}
+            },
+            "warp": {
+                "name": "Warp Songs Only",
+                "gui_setting": { "ocarina_songs": "warp" },
+                "additional_settings": {}
+            },
+            "all": {
+                "name": "All Songs",
+                "gui_setting": { "ocarina_songs": "all" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "correct_chest_appearances": {
+        "name": "Chest Appearance Matches Contents",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "correct_chest_appearances": "off" },
+                "additional_settings": {}
+            },
+            "textures": {
+                "name": "Texture",
+                "gui_setting": { "correct_chest_appearances": "textures" },
+                "additional_settings": {}
+            },
+            "both": {
+                "name": "Both Size and Texture",
+                "gui_setting": { "correct_chest_appearances": "both" },
+                "additional_settings": {}
+            },
+            "classic": {
+                "name": "Classic",
+                "gui_setting": { "correct_chest_appearances": "classic" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "invisible_chests": {
+        "name": "Invisible Chests",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "invisible_chests": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "invisible_chests": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "clearer_hints": {
+        "name": "Clearer Hints",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "clearer_hints": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "clearer_hints": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "text_shuffle": {
+        "name": "Text Shuffle",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "text_shuffle": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "text_shuffle": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "damage_multiplier": {
+        "name": "Damage Multiplier",
+        "options": {
+            "half": {
+                "name": "Half",
+                "gui_setting": { "damage_multiplier": "half" },
+                "additional_settings": {}
+            },
+            "normal": {
+                "name": "Normal",
+                "gui_setting": { "damage_multiplier": "normal" },
+                "additional_settings": {}
+            },
+            "double": {
+                "name": "Double",
+                "gui_setting": { "damage_multiplier": "double" },
+                "additional_settings": {}
+            },
+            "quadruple": {
+                "name": "Quadruple",
+                "gui_setting": { "damage_multiplier": "quadruple" },
+                "additional_settings": {}
+            },
+            "ohko": {
+                "name": "OHKO",
+                "gui_setting": { "damage_multiplier": "ohko" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "deadly_bonks": {
+        "name": "Bonks Do Damage",
+        "options": {
+            "none": {
+                "name": "No Damage",
+                "gui_setting": { "deadly_bonks": "none" },
+                "additional_settings": {}
+            },
+            "half": {
+                "name": "Quarter Heart",
+                "gui_setting": { "deadly_bonks": "half" },
+                "additional_settings": {}
+            },
+            "normal": {
+                "name": "Half Heart",
+                "gui_setting": { "deadly_bonks": "normal" },
+                "additional_settings": {}
+            },
+            "double": {
+                "name": "Whole Heart",
+                "gui_setting": { "deadly_bonks": "double" },
+                "additional_settings": {}
+            },
+            "quadruple": {
+                "name": "Two Hearts",
+                "gui_setting": { "deadly_bonks": "quadruple" },
+                "additional_settings": {}
+            },
+            "ohko": {
+                "name": "One Bonk KO",
+                "gui_setting": { "deadly_bonks": "ohko" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "no_collectible_hearts": {
+        "name": "Hero Mode",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "no_collectible_hearts": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "no_collectible_hearts": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "starting_tod": {
+        "name": "Starting Time of Day",
+        "options": {
+            "default": {
+                "name": "Default (10:00)",
+                "gui_setting": { "starting_tod": "default" },
+                "additional_settings": {}
+            },
+            "random": {
+                "name": "Random Choice",
+                "gui_setting": { "starting_tod": "random" },
+                "additional_settings": {}
+            },
+            "sunrise": {
+                "name": "Sunrise (6:30)",
+                "gui_setting": { "starting_tod": "sunrise" },
+                "additional_settings": {}
+            },
+            "morning": {
+                "name": "Morning (9:00)",
+                "gui_setting": { "starting_tod": "morning" },
+                "additional_settings": {}
+            },
+            "noon": {
+                "name": "Noon (12:00)",
+                "gui_setting": { "starting_tod": "noon" },
+                "additional_settings": {}
+            },
+            "afternoon": {
+                "name": "Afternoon (15:00)",
+                "gui_setting": { "starting_tod": "afternoon" },
+                "additional_settings": {}
+            },
+            "sunset": {
+                "name": "Sunset (18:00)",
+                "gui_setting": { "starting_tod": "sunset" },
+                "additional_settings": {}
+            },
+            "evening": {
+                "name": "Evening (21:00)",
+                "gui_setting": { "starting_tod": "evening" },
+                "additional_settings": {}
+            },
+            "midnight": {
+                "name": "Midnight (00:00)",
+                "gui_setting": { "starting_tod": "midnight" },
+                "additional_settings": {}
+            },
+            "witching-hour": {
+                "name": "Witching Hour (03:00)",
+                "gui_setting": { "starting_tod": "witching-hour" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "blue_fire_arrows": {
+        "name": "Blue Fire Arrows",
+        "options": {
+            "off": {
+                "name": "Off",
+                "gui_setting": { "blue_fire_arrows": false },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "On",
+                "gui_setting": { "blue_fire_arrows": true },
+                "additional_settings": {}
+            }
+        }
+    },
+    "item_pool_value": {
+        "name": "Item Pool",
+        "options": {
+            "ludicrous": {
+                "name": "Ludicrous",
+                "gui_setting": { "item_pool_value": "ludicrous" },
+                "additional_settings": {}
+            },
+            "plentiful": {
+                "name": "Plentiful",
+                "gui_setting": { "item_pool_value": "plentiful" },
+                "additional_settings": {}
+            },
+            "balanced": {
+                "name": "Balanced",
+                "gui_setting": { "item_pool_value": "balanced" },
+                "additional_settings": {}
+            },
+            "scarce": {
+                "name": "Scarce",
+                "gui_setting": { "item_pool_value": "scarce" },
+                "additional_settings": {}
+            },
+            "minimal": {
+                "name": "Minimal",
+                "gui_setting": { "item_pool_value": "minimal" },
+                "additional_settings": {}
+            }
+        }
+    },
+    "junk_ice_traps": {
+        "name": "Ice Traps",
+        "options": {
+            "off": {
+                "name": "No Ice Traps",
+                "gui_setting": { "junk_ice_traps": "off" },
+                "additional_settings": {}
+            },
+            "normal": {
+                "name": "Normal Ice Traps",
+                "gui_setting": { "junk_ice_traps": "normal" },
+                "additional_settings": {}
+            },
+            "on": {
+                "name": "Extra Ice Traps",
+                "gui_setting": { "junk_ice_traps": "on" },
+                "additional_settings": {}
+            },
+            "mayhem": {
+                "name": "Ice Trap Mayhem",
+                "gui_setting": { "junk_ice_traps": "mayhem" },
+                "additional_settings": {}
+            },
+            "onslaught": {
+                "name": "Ice Trap Onslaught",
+                "gui_setting": { "junk_ice_traps": "onslaught" },
+                "additional_settings": {}
+            }
+        }
+    }
+}
