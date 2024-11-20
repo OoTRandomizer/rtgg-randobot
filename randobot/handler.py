@@ -4,6 +4,7 @@ import datetime
 import re
 import random
 from racetime_bot import RaceHandler, monitor_cmd, can_moderate, can_monitor, msg_actions
+from .draft import configure_draft, DraftData
 
 
 def natjoin(sequence, default):
@@ -141,6 +142,11 @@ class RandoHandler(RaceHandler):
                             ),
                         ),
                     ),
+                    msg_actions.Action(
+                        label='Start draft',
+                        help_text='Begin a settings draft',
+                        message='!draft on'
+                    ),
                     msg_actions.ActionLink(
                         label='Help',
                         url='https://github.com/OoTRandomizer/rtgg-randobot/blob/master/COMMANDS.md',
@@ -159,6 +165,8 @@ class RandoHandler(RaceHandler):
             self.state['password_published'] = False
         if 'password_retrieval_failed' not in self.state:
             self.state['password_retrieval_failed'] = False
+        if 'draft_race' not in self.state:
+            self.state['draft_race'] = False
 
     async def end(self):
         if self.state.get('pinned_msg'):
@@ -227,6 +235,9 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
+        if self.state.get('draft_race'):
+            await self.send_message('This command is disabled for draft races.')
+            return
         await self.roll_and_send(args, message, encrypt=True, dev=False)
 
     async def ex_seeddev(self, args, message):
@@ -234,6 +245,9 @@ class RandoHandler(RaceHandler):
         Handle !seeddev commands.
         """
         if self._race_in_progress():
+            return
+        if self.state.get('draft_race'):
+            await self.send_message('This command is disabled for draft races.')
             return
         await self.roll_and_send(args, message, encrypt=True, dev=True)
 
@@ -243,6 +257,9 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
+        if self.state.get('draft_race'):
+            await self.send_message('This command is disabled for draft races.')
+            return
         await self.roll_and_send(args, message, encrypt=False, dev=False)
 
     async def ex_presets(self, args, message):
@@ -250,6 +267,9 @@ class RandoHandler(RaceHandler):
         Handle !presets commands.
         """
         if self._race_in_progress():
+            return
+        if self.state.get('draft_race'):
+            await self.send_message('This command is disabled for draft races.')
             return
         await self.send_presets(False)
 
@@ -259,7 +279,97 @@ class RandoHandler(RaceHandler):
         """
         if self._race_in_progress():
             return
+        if self.state.get('draft_race'):
+            await self.send_message('This command is disabled for draft races.')
+            return
         await self.send_presets(True)
+
+    async def ex_draft(self, args, message):
+        if len(args) == 1 and args[0] in ('on', 'off'):
+            if args[0] == 'on' and not self.state.get('draft_race'):
+                if self.state.get('pinned_msg'):
+                    await self.unpin_message(self.state['pinned_msg'])
+                self.state['draft_race'] = True
+                await self.send_message(
+                    'Welcome to the draft! Use the buttons below to set the configuration.',
+                    actions=[
+                        msg_actions.Action(
+                            label='Configure draft',
+                            help_text='Configure a draft race',
+                            message='!draft config ${drafter1} ${drafter2} ${num_bans} ${num_picks} ${base_preset} ${--allow_default_picks} ${--sort}',
+                            submit='Begin Draft',
+                            survey=msg_actions.Survey(
+                                msg_actions.SelectInput(
+                                    name='drafter1',
+                                    label='Drafter 1',
+                                    options={entrant['user']['full_name']: entrant['user']['full_name'] for entrant in self.data['entrants']},
+                                ),
+                                msg_actions.SelectInput(
+                                    name='drafter2',
+                                    label='Drafter 2',
+                                    options={entrant['user']['full_name']: entrant['user']['full_name'] for entrant in self.data['entrants']},
+                                ),
+                                msg_actions.SelectInput(
+                                    name='num_bans',
+                                    label='Bans per drafter',
+                                    options={num: num for num in range(1, 10)},
+                                ),
+                                msg_actions.SelectInput(
+                                    name='num_picks',
+                                    label='Picks per drafter',
+                                    options={num: num for num in range(1, 10)},
+                                    default=2,
+                                ),
+                                msg_actions.SelectInput(
+                                    name='base_preset',
+                                    label='Base Preset',
+                                    options={key: value['full_name'] for key, value in self.zsr.presets.items()},
+                                    default='s8',
+                                ),
+                                msg_actions.BoolInput(
+                                    name='--allow_default_picks',
+                                    label='Allow default picks',
+                                    help_text='Choose whether or not to allow the selection of a preset\'s default value',
+                                    default=True,
+                                ),
+                                msg_actions.BoolInput(
+                                    name='--sort',
+                                    label='Sort by racetime.gg score',
+                                    help_text='Sorts the drafters by their racetime.gg scores to determine who decides the draft order',
+                                    default=True,
+                                ),
+                            ),
+                        ),
+                        msg_actions.Action(
+                            label='Cancel draft',
+                            message='!draft off'
+                        )
+                    ],
+                )
+            elif args[0] == 'off' and self.state.get('draft_race'):
+                if self.state.get('pinned_msg'):
+                    await self.pin_message(self.state['pinned_msg'])
+                self.state['draft_race'] = False
+                if self.state.get('draft_data'):
+                    del self.state['draft_data']
+                await self.send_message('The draft has been canceled')
+        if args[0] == 'config' and self.state.get('draft_race'):
+            draft_config, resp = configure_draft(self.data['entrants'], self.zsr.presets, args[1:])
+            if draft_config:
+                self.state['draft_data'] = DraftData(*draft_config)
+            await self.send_message(resp)
+
+    async def ex_first(self, args, message):
+        pass
+
+    async def ex_second(self, args, message):
+        pass
+
+    async def ex_ban(self, args, message):
+        pass
+
+    async def ex_pick(self, args, message):
+        pass
 
     @monitor_cmd
     async def ex_password(self, args, message):
@@ -348,12 +458,12 @@ class RandoHandler(RaceHandler):
             preset = args[0]
 
             if len(args) == 2:
-                if args[1] == "--withpassword":
+                if args[1] == '--withpassword':
                     self.state['password_active'] = True
                 else:
                     await self.send_message(
                         'Sorry %(reply_to)s, that is not the correct syntax. '
-                        'The syntax is "!seed presetName {--withpassword}'
+                        'The syntax is "!seed presetName {--withpassword}"'
                         % {'reply_to': reply_to or 'friend'}
                     )
                     return
