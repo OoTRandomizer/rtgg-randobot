@@ -358,7 +358,6 @@ class RandoHandler(RaceHandler):
                     )
                     return
 
-
         password = self.state.get('password_active')
 
         if self.state.get('locked') and not can_monitor(message):
@@ -386,7 +385,6 @@ class RandoHandler(RaceHandler):
         """
         Generate a seed and send it to the race room.
         """
-        
         if (dev and preset not in self.zsr.presets_dev) or (not dev and preset not in self.zsr.presets):
             res_cmd = '!presetsdev' if dev else '!presets'
             await self.send_message(
