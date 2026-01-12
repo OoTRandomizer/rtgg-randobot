@@ -170,13 +170,19 @@ class Branch:
         settings = requests.get(self.settings_endpoint).json()
 
         return {
-            min(settings[preset]['aliases'], key=len): {
-                'full_name': preset,
-                'settings': settings.get(preset),
-            }
-            for preset in settings if 'aliases' in settings[preset]
+            'default': {
+                'full_name': 'Default / Beginner',
+                'settings': {},
+            },
+            **{
+                min(settings[preset]['aliases'], key=len): {
+                    'full_name': preset,
+                    'settings': settings.get(preset),
+                }
+                for preset in settings if 'aliases' in settings[preset]
+            },
         }
-    
+
     def get_latest_version(self):
         """
         Fetch the latest version of the supplied randomizer branch.
@@ -184,6 +190,6 @@ class Branch:
         version_req = requests.get(ZSR.version_endpoint, params={'branch': self.ootr_name}).json()
         latest_version = version_req['currentlyActiveVersion']
         return latest_version
-    
+
     def update_version(self, version):
         self.version = version
