@@ -172,7 +172,9 @@ class Branch:
         return {
             'default': {
                 'full_name': 'Default / Beginner',
-                'settings': {},
+                'settings': {
+                    'user_message': 'Default / Beginner',
+                },
             },
             **{
                 min(settings[preset]['aliases'], key=len): {
