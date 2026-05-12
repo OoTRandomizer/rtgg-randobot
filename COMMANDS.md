@@ -88,8 +88,8 @@ Enable or disable the password functionality. By default, this is disabled, but 
 can be toggled on by a race monitor or moderator with `!password on`. 
 It can be toggled off again with `!password off`.
 
-When enabled, the seed is generated with a random 6 digit password consisting of
-ocarina notes. This password is required to start a file in the generated seed.
+When enabled, the seed is generated with a random password consisting of
+N64 style buttons. This password is required to start a file in the generated seed.
 
 Once this setting is enabled, Randobot will publish the password at the start of the
 race countdown next to the seed hash in the race room information.

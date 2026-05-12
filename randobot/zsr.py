@@ -63,6 +63,9 @@ class ZSR:
         'C up':'NoteCup',
         'C left':'NoteCleft',
         'C right':'NoteCright',
+        'L':'NoteL',
+        'R':'NoteR',
+        'Z':'NoteZ',
     }
 
     def __init__(self, ootr_api_key):
