@@ -206,6 +206,12 @@ class RandoHandler(RaceHandler):
             if args[0] in self.zsr.version_map:
                 self.randomizer_branch = self.zsr.version_map[args[0]]
 
+                if self.randomizer_branch.rtgg_arg != 'stable':
+                    latest_version = self.randomizer_branch.get_latest_version()
+                    if latest_version != self.randomizer_branch.version:
+                        self.randomizer_branch.update_version(latest_version)
+                        self.randomizer_branch.load_presets()
+
                 await self.send_message(
                     f'Randomizer branch changed to: {self.randomizer_branch.name} v{self.randomizer_branch.version}',
                     actions=[

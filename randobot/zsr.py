@@ -167,15 +167,15 @@ class Branch:
         self.ootr_name = ootr_name
         self.settings_endpoint = settings_endpoint
         self.version = self.get_latest_version()
-        self.presets = self.load_presets()
+        self.load_presets()
 
     def load_presets(self):
         settings = requests.get(self.settings_endpoint).json()
 
-        return {
+        self.presets = {
             min(settings[preset]['aliases'], key=len): {
                 'full_name': preset,
-                'settings': settings.get(preset),
+                'settings': settings.get(preset)
             }
             for preset in settings if 'aliases' in settings[preset]
         }
