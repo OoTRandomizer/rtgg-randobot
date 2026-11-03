@@ -101,7 +101,7 @@ class RandoHandler(RaceHandler):
         if await self.should_stop():
             return
         if not self.state.get('intro_sent') and not self._race_in_progress():
-            self.zsr.get_lastest_branch_data(self.randomizer_branch)
+            self.zsr.get_latest_branch_data(self.randomizer_branch)
             await self.send_message(
                 'Welcome to OoTR! ' + random.choice(self.greetings),
                 actions=[
@@ -224,10 +224,10 @@ class RandoHandler(RaceHandler):
 
     async def change_branch(self, branch):
         self.randomizer_branch = self.zsr.version_map[branch]
-        self.zsr.get_lastest_branch_data(self.randomizer_branch)
+        self.zsr.get_latest_branch_data(self.randomizer_branch)
         
         await self.send_message(
-            f'The currently selected branch is: {self.randomizer_branch.name} v{self.randomizer_branch.version}',
+            f'Randomizer branch changed to: {self.randomizer_branch.name} v{self.randomizer_branch.version}',
             actions=[
                 msg_actions.Action(
                     label='Roll seed',
@@ -283,7 +283,47 @@ class RandoHandler(RaceHandler):
                 else:
                     self.zsr.version_map[args[0]].update()
                     await self.send_message(f'{self.zsr.version_map[args[0]].name} has been updated.')
-                await self.change_branch(self.randomizer_branch.rtgg_arg)
+                    
+                await self.send_message(
+                    f'The currently selected branch is: {self.randomizer_branch.name} v{self.randomizer_branch.version}',
+                    actions=[
+                        msg_actions.Action(
+                            label='Roll seed',
+                            help_text='Create a seed using one of many presets',
+                            message='!seed ${preset} ${--withpassword}',
+                            submit='Roll seed',
+                            survey=msg_actions.Survey(
+                                msg_actions.SelectInput(
+                                    name='preset',
+                                    label='Preset',
+                                    options={key: value['full_name'] for key, value in self.randomizer_branch.presets.items()},
+                                ),
+                                msg_actions.BoolInput(
+                                    name='--withpassword',
+                                    label='Password',
+                                    help_text='Locks file creation behind a 6 ocarina notes password provided at countdown start',
+                                ),
+                            ),
+                        ),
+                        msg_actions.Action(
+                            label=' Change Branch',
+                            help_text='Change the branch to use when rolling the seed.',
+                            message='!branch ${branch}',
+                            submit='Select',
+                            survey=msg_actions.Survey(
+                                msg_actions.SelectInput(
+                                    name='branch',
+                                    label='Branch',
+                                    options={key: value.name for key, value in self.zsr.version_map.items()}
+                                )
+                            ),
+                        ),
+                        msg_actions.ActionLink(
+                            label='Help',
+                            url='https://github.com/OoTRandomizer/rtgg-randobot/blob/master/COMMANDS.md',
+                        ),
+                    ]
+                )
             else:
                 await self.send_message(
                     'Sorry %(reply_to)s, that option does not exist. '
