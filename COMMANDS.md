@@ -10,7 +10,17 @@ Select which ootrandomizer.com branch to use when rolling a seed, whether it be
 the stable (release) branch or one of a development branches.
 
 Once a seed has been generated using `!seed` (or `!spoilerseed`), subsequent
-calls to `!branch` will not work unless used by a race moderator.
+calls to `!branch` will not work.
+
+## !update
+
+Usable by: **race moderators only**
+
+Force a specific development branch or all development branches to update their verisons
+and presets. Otherwise, RandoBot will check for an update to a branch when switched to once
+every 24 hours.
+
+Usage: `!update <branch> | all`
 
 ## !seed
 
