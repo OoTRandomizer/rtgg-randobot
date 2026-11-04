@@ -1,6 +1,7 @@
 import json
 import requests
 import time
+from datetime import datetime, timedelta
 
 
 class ZSR:
@@ -89,10 +90,7 @@ class ZSR:
         dev = branch.rtgg_arg != 'stable'
 
         if dev:
-            latest_version = branch.get_latest_version()
-            if latest_version != branch.version:
-                branch.update_version(latest_version)
-                branch.load_presets()
+            branch.update()
         req_body = json.dumps(branch.presets[preset]['settings'])
 
         params = {
@@ -109,6 +107,10 @@ class ZSR:
         data = requests.post(self.seed_endpoint, req_body, params=params,
                              headers={'Content-Type': 'application/json'}).json()
         return data['id'], self.seed_public % data
+
+    def get_latest_branch_data(self, branch):
+        if branch.should_update():
+            branch.update()
 
     def get_status(self, seed_id):
         data = requests.get(self.status_endpoint, params={
@@ -165,9 +167,24 @@ class Branch:
         self.rtgg_arg = rtgg_arg
         self.name = name
         self.ootr_name = ootr_name
+        self.last_updated = datetime.now()
         self.settings_endpoint = settings_endpoint
-        self.version = self.get_latest_version()
-        self.presets = self.load_presets()
+        self.version = None
+        self.presets = {}
+        self.update()
+
+    def should_update(self):
+        current_time = datetime.now()
+        if current_time - self.last_updated < timedelta(days=1):
+            return False
+        return True
+    
+    def update(self):
+        latest_version = self.get_latest_version()
+        if latest_version != self.version:
+            self.version = latest_version
+            self.load_presets()
+            self.last_updated = datetime.now()
 
     def load_presets(self):
         settings = requests.get(self.settings_endpoint).json()
@@ -182,7 +199,7 @@ class Branch:
                 'full_name': preset,
                 'settings': preset_settings,
             }
-        return presets
+        self.presets = presets
     
     def get_latest_version(self):
         """
@@ -191,6 +208,3 @@ class Branch:
         version_req = requests.get(ZSR.version_endpoint, params={'branch': self.ootr_name}).json()
         latest_version = version_req['currentlyActiveVersion']
         return latest_version
-    
-    def update_version(self, version):
-        self.version = version
