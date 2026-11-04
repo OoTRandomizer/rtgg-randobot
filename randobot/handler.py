@@ -1,5 +1,4 @@
 from asyncio import sleep
-from copy import deepcopy
 import datetime
 import re
 import random
